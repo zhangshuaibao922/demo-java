@@ -5,6 +5,6 @@ import com.cardo.demojava.dto.Login;
 import com.cardo.demojava.entity.Response;
 import com.cardo.demojava.entity.User;
 
-public interface LoginService extends IService<Login> {
+public interface LoginService {
     Response<User> login(Login login);
 }

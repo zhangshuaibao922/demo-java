@@ -3,12 +3,11 @@ package com.cardo.demojava;
 import com.cardo.demojava.config.RedisService;
 import com.cardo.demojava.dto.Expert;
 import com.cardo.demojava.entity.*;
-import com.cardo.demojava.mapper.FieldMapper;
-import com.cardo.demojava.mapper.RoleMapper;
-import com.cardo.demojava.mapper.UserMapper;
+import com.cardo.demojava.mapper.*;
 import com.cardo.demojava.service.ExpertService;
 import com.cardo.demojava.service.LoginService;
 import com.cardo.demojava.util.SendMailUtils;
+import com.cardo.demojava.util.SnowflakeIdGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -36,6 +35,10 @@ class DemoJavaApplicationTests {
     RedisService redisService;
     @Autowired
     ExpertService expertService;
+    @Autowired
+    ColleagueMapper colleagueMapper;
+    @Autowired
+    ClassmateMapper classmateMapper;
     @Test
     void contextLoads() {
         redisService.deleteKey("experts");
@@ -72,7 +75,7 @@ class DemoJavaApplicationTests {
     @Test
     void contextLoads3() {
         List<String> list= new ArrayList<>();
-        list.add("1357756491@qq.com");
+        list.add("3425178647@qq.com");
 
         sendMailUtils.sendEmail(list, "测试发送邮件",
                 "您好！这是我发送的一封测试邮件。");
@@ -80,8 +83,17 @@ class DemoJavaApplicationTests {
 
     @Test
     void contextLoads4() throws JsonProcessingException {
-//        Response<List<Expert>> all = expertService.getAll();
-//        System.out.println(all.getData().size());
-
+//        User user = userMapper.selectById(14);
+//        String relationship = user.getRelationship();
+//        Classmate classmate = new Classmate();
+//        classmate.setRelationship(relationship);
+//        classmate.setClassmateId("1");
+//        classmateMapper.insert(classmate);
+        User user = userMapper.selectById("1");
+        String relationship = user.getRelationship();
+                Classmate classmate = new Classmate();
+        classmate.setRelationship(relationship);
+        classmate.setClassmateId("14");
+        classmateMapper.insert(classmate);
     }
 }

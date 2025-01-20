@@ -1,180 +1,189 @@
 package com.cardo.demojava.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.cardo.demojava.config.RedisService;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cardo.demojava.dto.Expert;
-import com.cardo.demojava.entity.RelationShip;
-import com.cardo.demojava.entity.Response;
-import com.cardo.demojava.entity.User;
+import com.cardo.demojava.entity.*;
+import com.cardo.demojava.mapper.ClassmateMapper;
+import com.cardo.demojava.mapper.ColleagueMapper;
 import com.cardo.demojava.mapper.UserMapper;
 import com.cardo.demojava.service.ExpertService;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static com.cardo.demojava.contant.Code.*;
 
 
 @Service
 public class ExpertServiceImpl implements ExpertService {
-    @Autowired
-    RedisService redisService;
+
 
     @Autowired
     UserMapper userMapper;
+    @Autowired
+    ColleagueMapper colleagueMapper;
+    @Autowired
+    ClassmateMapper classmateMapper;
 
     @Override
-    public Response<List<Expert>> getAll(String name) throws JsonProcessingException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        String valueByKey = redisService.getValueByKey("experts");
-        if(name != null && !name.trim().isEmpty()){
-            LambdaQueryWrapper<User> userLambdaQueryWrapper = new LambdaQueryWrapper<>();
-            userLambdaQueryWrapper.like(User::getName, name);
-            userLambdaQueryWrapper.isNotNull(User::getRelationship);
-            userLambdaQueryWrapper.ne(User::getRelationship, "");
-            List<User> users = userMapper.selectList(userLambdaQueryWrapper);
-            List<Expert> experts = new ArrayList<>();
-            for (User user : users) {
-                Expert expert = new Expert();
-                expert.setId(user.getId());
-                expert.setName(user.getName());
-                List<RelationShip> relationShips = objectMapper.readValue(user.getRelationship(), new TypeReference<List<RelationShip>>() {
-                });
-                List<String> classmate=new ArrayList<>();
-                List<String> colleague=new ArrayList<>();
-                for (RelationShip relationShip : relationShips) {
-                    if(Objects.equals(relationShip.getValue(), "classmate")){
-                        classmate.add(relationShip.getId());
-                    }
-                    if(Objects.equals(relationShip.getValue(), "colleague")){
-                        colleague.add(relationShip.getId());
-                    }
-                }
-                expert.setClassmate(classmate);
-                expert.setColleague(colleague);
-                experts.add(expert);
-            }
-            return Response.ok(experts);
-        }else {
-            if (valueByKey != null ) {
-                List<Expert> experts = objectMapper.readValue(valueByKey, new TypeReference<List<Expert>>() {
-                });
-                return Response.ok(experts);
-            }else {
-                LambdaQueryWrapper<User> userLambdaQueryWrapper = new LambdaQueryWrapper<>();
-                userLambdaQueryWrapper.isNotNull(User::getRelationship);
-                userLambdaQueryWrapper.ne(User::getRelationship, "");
-                List<User> users = userMapper.selectList(userLambdaQueryWrapper);
-                List<Expert> experts = new ArrayList<>();
-                for (User user : users) {
-                    Expert expert = new Expert();
-                    expert.setId(user.getId());
-                    expert.setName(user.getName());
-                    List<RelationShip> relationShips = objectMapper.readValue(user.getRelationship(), new TypeReference<List<RelationShip>>() {
-                    });
-                    List<String> classmate=new ArrayList<>();
-                    List<String> colleague=new ArrayList<>();
-                    for (RelationShip relationShip : relationShips) {
-                        if(Objects.equals(relationShip.getValue(), "classmate")){
-                            classmate.add(relationShip.getId());
-                        }
-                        if(Objects.equals(relationShip.getValue(), "colleague")){
-                            colleague.add(relationShip.getId());
-                        }
-                    }
-                    expert.setClassmate(classmate);
-                    expert.setColleague(colleague);
-                    experts.add(expert);
-                }
-
-                String s = objectMapper.writeValueAsString(experts);
-                redisService.setKeyValue("experts", s);
-                return Response.ok(experts);
-            }
+    public Response<IPage<Expert>> getAll(Page<User> pagination, String name) throws JsonProcessingException {
+        // 创建查询条件
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+        if (name != null && !name.trim().isEmpty()) {
+            queryWrapper.eq(User::getName, name);
         }
+        // 执行分页查询
+        Page<User> userPage = userMapper.selectPage(pagination, queryWrapper);
+        List<User> users = userPage.getRecords();
+        List<Expert> experts = new ArrayList<>();
+        for (User user : users) {
+            Expert expert = new Expert();
+            expert.setId(user.getId());
+            expert.setName(user.getName());
+            List<String> classmate= new ArrayList<>();
+            List<Classmate> classmates = classmateMapper.selectList(new LambdaQueryWrapper<Classmate>().eq(Classmate::getRelationship, user.getRelationship()));
+            if(classmates != null && !classmates.isEmpty()) {
+                // 提取 classmateId
+                // 通过 classmateId 获取 User，并提取名字
+                // 将名字收集到 List 中
+                classmate= classmates.stream()
+                        .map(Classmate::getClassmateId) // 提取 classmateId
+                        .map(classmateId -> userMapper.selectById(classmateId).getName())
+                        .collect(Collectors.toList());
+            }
+            expert.setClassmate(classmate);
+            List<String> colleague = new ArrayList<>();
+            List<Colleague> colleagues = colleagueMapper.selectList(new LambdaQueryWrapper<Colleague>().eq(Colleague::getRelationship, user.getRelationship()));
+            if(colleagues != null && !colleagues.isEmpty()) {
+                colleague=colleagues.stream()
+                        .map(Colleague::getColleagueId)
+                        .map(colleagueId-> userMapper.selectById(colleagueId).getName())
+                        .collect(Collectors.toList());
+            }
+            expert.setColleague(colleague);
+            experts.add(expert);
+        }
+        Page<Expert> expertPage = new Page<>();
+        BeanUtils.copyProperties(userPage, expertPage);
+        expertPage.setRecords(experts);
+        return Response.ok(expertPage);
     }
 
     @Override
     public Response<String> update(Expert expert) throws JsonProcessingException {
         User user = userMapper.selectById(expert.getId());
-        ObjectMapper objectMapper = new ObjectMapper();
-        List<RelationShip> relationShips=new ArrayList<>();
-        List<String> classmate = expert.getClassmate();
-        for (String id : classmate) {
-            RelationShip relationShip = new RelationShip();
-            relationShip.setId(id);
-            relationShip.setValue("classmate");
-            relationShips.add(relationShip);
-        }
-        List<String> colleague = expert.getColleague();
-        for (String id : colleague) {
-            RelationShip relationShip = new RelationShip();
-            relationShip.setId(id);
-            relationShip.setValue("colleague");
-            relationShips.add(relationShip);
-        }
-        // 将 relationShips 列表转换为 JSON 字符串
-        String json = objectMapper.writeValueAsString(relationShips);
-        user.setRelationship(json);
-        int i = userMapper.updateById(user);
-        if(i > 0) {
-            redisService.deleteKey("experts");
-            return Response.ok("OK");
-        }else {
+        String relationship = user.getRelationship();
+        try {
+            //拿到原来的标签对方的id
+            List<Classmate> classmates = classmateMapper
+                    .selectList(new LambdaQueryWrapper<Classmate>()
+                    .eq(Classmate::getRelationship, relationship));
+            //删除自己的标签
+            classmateMapper.delete(new LambdaQueryWrapper<Classmate>().eq(Classmate::getRelationship, relationship));
+            //根据对方的id，删除相应的标签
+            for (Classmate classmate : classmates) {
+                String relationship1 = userMapper.selectById(classmate.getClassmateId()).getRelationship();
+                classmateMapper.delete(new LambdaQueryWrapper<Classmate>().eq(Classmate::getRelationship, relationship1));
+            }
+            //现在根据上传过来的expert中的classmateID来进行填充
+            List<String> classmate1 = expert.getClassmate();
+            for (String classmateName : classmate1) {
+                //新增对应name所拥有的标签
+                User other = userMapper.selectOne(new LambdaQueryWrapper<User>()
+                        .eq(User::getName, classmateName));
+
+                String otherRelationship = other.getRelationship();
+                Classmate otherClassmate = new Classmate();
+                otherClassmate.setClassmateId(expert.getId());
+                otherClassmate.setRelationship(otherRelationship);
+                classmateMapper.insert(otherClassmate);
+
+                //修改自己存的标签
+                Classmate classmate = new Classmate();
+                classmate.setClassmateId(other.getId());
+                classmate.setRelationship(relationship);
+                classmateMapper.insert(classmate);
+
+            }
+
+            List<Colleague> colleagues = colleagueMapper
+                    .selectList(new LambdaQueryWrapper<Colleague>()
+                            .eq(Colleague::getRelationship, relationship));
+            //删除自己的标签
+            colleagueMapper.delete(new LambdaQueryWrapper<Colleague>().eq(Colleague::getRelationship, relationship));
+            //根据对方的id，删除相应的标签
+            for (Colleague colleague : colleagues) {
+                String relationship1 = userMapper.selectById(colleague.getColleagueId()).getRelationship();
+                colleagueMapper.delete(new LambdaQueryWrapper<Colleague>().eq(Colleague::getRelationship, relationship1));
+            }
+            //现在根据上传过来的expert中的colleagueID来进行填充
+            List<String> colleague1 = expert.getColleague();
+            for (String colleagueName : colleague1) {
+                //新增对应name所拥有的标签
+                User other = userMapper.selectOne(new LambdaQueryWrapper<User>()
+                        .eq(User::getName, colleagueName));
+
+                String otherRelationship = other.getRelationship();
+                Colleague othercolleague = new Colleague();
+                othercolleague.setColleagueId(expert.getId());
+                othercolleague.setRelationship(otherRelationship);
+                colleagueMapper.insert(othercolleague);
+
+                //修改自己存的标签
+                Colleague colleague = new Colleague();
+                colleague.setColleagueId(other.getId());
+                colleague.setRelationship(relationship);
+                colleagueMapper.insert(colleague);
+            }
+        } catch (Exception e) {
             return Response.error(UPDATE_FAIL);
         }
+        return Response.ok("OK");
     }
 
-    @Override
-    public Response<String> add(Expert expert) throws JsonProcessingException {
-        LambdaQueryWrapper<User> userLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        userLambdaQueryWrapper.eq(User::getName, expert.getName());
-        User user = userMapper.selectOne(userLambdaQueryWrapper);
-        ObjectMapper objectMapper = new ObjectMapper();
-        List<RelationShip> relationShips=new ArrayList<>();
-        List<String> classmate = expert.getClassmate();
-        for (String id : classmate) {
-            RelationShip relationShip = new RelationShip();
-            relationShip.setId(id);
-            relationShip.setValue("classmate");
-            relationShips.add(relationShip);
-        }
-        List<String> colleague = expert.getColleague();
-        for (String id : colleague) {
-            RelationShip relationShip = new RelationShip();
-            relationShip.setId(id);
-            relationShip.setValue("colleague");
-            relationShips.add(relationShip);
-        }
-        // 将 relationShips 列表转换为 JSON 字符串
-        String json = objectMapper.writeValueAsString(relationShips);
-        user.setRelationship(json);
-        int i = userMapper.insert(user);
-        if(i > 0) {
-            redisService.deleteKey("experts");
-            return Response.ok("OK");
-        }else {
-            return Response.error(ADD_FAIL);
-        }
-    }
+//    @Override
+//    public Response<String> add(Expert expert) throws JsonProcessingException {
+//        User user = userMapper.selectById(expert.getId());
+//        String relationship = user.getRelationship();
+//        try {
+//            classmateMapper.delete(new LambdaQueryWrapper<Classmate>().eq(Classmate::getRelationship, relationship));
+//            List<String> classmateList = expert.getClassmate();
+//            for (String classmateId : classmateList) {
+//                Classmate classmate = new Classmate();
+//                classmate.setClassmateId(classmateId);
+//                classmate.setRelationship(relationship);
+//                classmateMapper.insert(classmate);
+//            }
+//            colleagueMapper.delete(new LambdaQueryWrapper<Colleague>().eq(Colleague::getRelationship, relationship));
+//            List<String> colleagueList = expert.getColleague();
+//            for (String colleagueId : colleagueList) {
+//                Colleague colleague = new Colleague();
+//                colleague.setColleagueId(colleagueId);
+//                colleague.setRelationship(relationship);
+//                colleagueMapper.insert(colleague);
+//            }
+//        } catch (Exception e) {
+//            return Response.error(ADD_FAIL);
+//        }
+//        return Response.ok("OK");
+//    }
 
     @Override
     public Response<String> delete(String id) throws JsonProcessingException {
         User user = userMapper.selectById(id);
-        user.setRelationship("");
-        int i = userMapper.updateById(user);
-        if(i > 0) {
-            redisService.deleteKey("experts");
-            return Response.ok("OK");
-        }else {
-            return Response.error(DELETE_FAIL);
-        }
+        String relationship = user.getRelationship();
+        classmateMapper.delete(new LambdaQueryWrapper<Classmate>().eq(Classmate::getRelationship, relationship));
+        classmateMapper.delete(new LambdaQueryWrapper<Classmate>().eq(Classmate::getClassmateId,id));
+        colleagueMapper.delete(new LambdaQueryWrapper<Colleague>().eq(Colleague::getRelationship, relationship));
+        colleagueMapper.delete(new LambdaQueryWrapper<Colleague>().eq(Colleague::getColleagueId,id));
+        return Response.ok("OK");
     }
 
     @Override
@@ -187,15 +196,19 @@ public class ExpertServiceImpl implements ExpertService {
 
     @Override
     public Response<String> deleteAllUser(List<Expert> experts) {
-        if(experts.isEmpty()) {
+        if (experts.isEmpty()) {
             return Response.error(DELETE_FAIL);
-        }else {
+        } else {
             for (Expert expert : experts) {
                 User user = userMapper.selectById(expert.getId());
-                user.setRelationship("");
-                int i = userMapper.updateById(user);
+                String relationship = user.getRelationship();
+                classmateMapper.delete(new LambdaQueryWrapper<Classmate>().eq(Classmate::getRelationship, relationship));
+                colleagueMapper.delete(new LambdaQueryWrapper<Colleague>().eq(Colleague::getRelationship, relationship));
+                classmateMapper.delete(new LambdaQueryWrapper<Classmate>().eq(Classmate::getRelationship, relationship));
+                classmateMapper.delete(new LambdaQueryWrapper<Classmate>().eq(Classmate::getClassmateId,user.getId()));
+                colleagueMapper.delete(new LambdaQueryWrapper<Colleague>().eq(Colleague::getRelationship, relationship));
+                colleagueMapper.delete(new LambdaQueryWrapper<Colleague>().eq(Colleague::getColleagueId,user.getId()));
             }
-            redisService.deleteKey("experts");
             return Response.ok("OK");
         }
     }

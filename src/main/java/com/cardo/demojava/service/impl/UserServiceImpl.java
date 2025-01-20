@@ -14,6 +14,8 @@ import com.cardo.demojava.mapper.FieldMapper;
 import com.cardo.demojava.mapper.RoleMapper;
 import com.cardo.demojava.mapper.UserMapper;
 import com.cardo.demojava.service.UserService;
+import com.cardo.demojava.util.MD5;
+import com.cardo.demojava.util.SnowflakeIdGenerator;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -45,7 +47,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
          // 创建查询条件
          LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
          if (name != null && !name.trim().isEmpty()) {
-             queryWrapper.eq(User::getName, name);
+             queryWrapper.like(User::getName, name);
          }
          if (fieldName != null && !fieldName.trim().isEmpty()) {
              LambdaQueryWrapper<Field> fieldLambdaQueryWrapper = new LambdaQueryWrapper<>();
@@ -87,6 +89,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public Response<String> addUser(User user) {
+        SnowflakeIdGenerator snowflakeIdGenerator = new SnowflakeIdGenerator(1);
+        String relationship = snowflakeIdGenerator.nextIdAsString();
+        user.setRelationship(relationship);
         int insert = userMapper.insert(user);
         if(insert > 0) {
             return Response.ok("OK");

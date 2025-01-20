@@ -1,5 +1,7 @@
 package com.cardo.demojava.controller;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cardo.demojava.dto.Expert;
 import com.cardo.demojava.entity.Response;
 import com.cardo.demojava.entity.User;
@@ -17,21 +19,27 @@ import java.util.List;
 public class ExpertController {
     @Autowired
     private ExpertService expertService;
+
     //全部
     @GetMapping("/all")
-    public Response<List<Expert>> getAll(@RequestParam(required = false) String name) throws JsonProcessingException {
-        return expertService.getAll(name);
+    public Response<IPage<Expert>> getAll(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String name) throws JsonProcessingException {
+        // 构建分页参数
+        Page<User> pagination = new Page<>(page, size);
+        return expertService.getAll(pagination,name);
     }
     //修改
     @PostMapping("/update")
     public Response<String> updateExpert(@RequestBody Expert expert) throws JsonProcessingException {
         return expertService.update(expert);
     }
-    //新增
-    @PostMapping("/add")
-    public Response<String> addExpert(@RequestBody Expert expert) throws JsonProcessingException {
-        return expertService.add(expert);
-    }
+//    //新增
+//    @PostMapping("/add")
+//    public Response<String> addExpert(@RequestBody Expert expert) throws JsonProcessingException {
+//        return expertService.add(expert);
+//    }
 
     //删除
     @GetMapping("/delete/{id}")

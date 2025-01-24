@@ -54,7 +54,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
              fieldLambdaQueryWrapper.like(Field::getFieldName, fieldName);
              List<Field> fields = fieldMapper.selectList(fieldLambdaQueryWrapper);
              for (Field field : fields) {
-                 queryWrapper.like(User::getFieldId, field.getFieldId());
+                 queryWrapper.eq(User::getFieldId, field.getFieldId());
              }
          }
 
@@ -63,27 +63,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
          }
          // 执行分页查询
          Page<User> userPage = userMapper.selectPage(pagination, queryWrapper);
-//         List<Field> fields = fieldMapper.selectList(null);
-//        List<Role> roles = roleMapper.selectList(null);
-//        ArrayList<UserDto> userDtos = new ArrayList<>();
-//         for (User record : userPage.getRecords()) {
-//             UserDto userDto = new UserDto();
-//             BeanUtils.copyProperties(record, userDto);
-//             for (Field field : fields) {
-//                 if (Objects.equals(field.getFieldId(), record.getFieldId())) {
-//                     userDto.setFieldName(field.getFieldName());
-//                 }
-//             }
-//             for (Role role : roles) {
-//                 if (role.getRoleId().equals(record.getRoleId())) {
-//                     userDto.setRoleName(role.getRoleName());
-//                 }
-//             }
-//             userDtos.add(userDto);
-//         }
-//        Page<UserDto> userDtoPage = new Page<>();
-//        BeanUtils.copyProperties(userPage, userDtoPage);
-//        userDtoPage.setRecords(userDtos);
          return Response.ok(userPage);
      }
 

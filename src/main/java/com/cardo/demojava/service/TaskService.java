@@ -6,9 +6,15 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.cardo.demojava.entity.Response;
 import com.cardo.demojava.entity.Task;
 
+import java.util.List;
+
 
 public interface TaskService extends IService<Task> {
     Response<IPage<Task>> queryTasks(Page<Task> pagination, String taskName, Integer status);
 
     Response<String> add(Task task);
+
+    Response<String> deleteAll(List<Task> tasks);
+
+    Response<String> delete(String id);
 }

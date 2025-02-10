@@ -37,7 +37,7 @@ public class ExpertServiceImpl implements ExpertService {
         // 创建查询条件
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
         if (name != null && !name.trim().isEmpty()) {
-            queryWrapper.eq(User::getName, name);
+            queryWrapper.like(User::getName, name);
         }
         // 执行分页查询
         Page<User> userPage = userMapper.selectPage(pagination, queryWrapper);

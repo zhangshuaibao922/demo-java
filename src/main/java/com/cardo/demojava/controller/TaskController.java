@@ -16,6 +16,7 @@ import java.util.List;
  * @author :
  * @date : 2024-12-27
  */
+//todo 需要注意删除的时候，对应的conditionId对应的规则sql删除
 @Api(tags = "任务功能接口")
 @RestController
 @RequestMapping("/task")
@@ -44,13 +45,13 @@ public class TaskController {
 
      @PostMapping("/delete/all")
      public Response<String> deleteAllUser(@RequestBody List<Task> tasks) {
-         return null;
+         return taskService.deleteAll(tasks);
      }
 
      //删除
      @GetMapping("/delete/{id}")
      public Response<String> deleteUser(@PathVariable String id) {
-         return null;
+         return taskService.delete(id);
      }
      //修改
      @PostMapping("/update")

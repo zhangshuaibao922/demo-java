@@ -4,7 +4,7 @@ import org.springframework.util.DigestUtils;
 /**
  * @author cardo
  * @Version 1.0
- * @Description TODO
+ * @Description
  * @date 2024/5/5 22:40
  */
 public class MD5 {

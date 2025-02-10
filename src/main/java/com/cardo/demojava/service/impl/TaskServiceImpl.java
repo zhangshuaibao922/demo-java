@@ -10,6 +10,10 @@ import com.cardo.demojava.mapper.TaskMapper;
 import com.cardo.demojava.service.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
 import static com.cardo.demojava.contant.Code.*;
 
 @Service
@@ -40,6 +44,27 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
             return Response.ok("OK");
         }else {
             return Response.error(ADD_FAIL);
+        }
+    }
+
+    @Override
+    public Response<String> deleteAll(List<Task> tasks) {
+        List<String> collect = tasks.stream().map(Task::getId).collect(Collectors.toList());
+        int i = taskMapper.deleteBatchIds(collect);
+        if (i > 0) {
+            return Response.ok("OK");
+        }else {
+            return Response.error(DELETE_FAIL);
+        }
+    }
+
+    @Override
+    public Response<String> delete(String id) {
+        int i = taskMapper.deleteById(id);
+        if (i > 0) {
+            return Response.ok("OK");
+        } else {
+            return Response.error(DELETE_FAIL);
         }
     }
 }

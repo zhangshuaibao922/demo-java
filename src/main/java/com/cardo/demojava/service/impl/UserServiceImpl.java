@@ -5,24 +5,17 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.cardo.demojava.dto.UserDto;
 import com.cardo.demojava.entity.Field;
 import com.cardo.demojava.entity.Response;
-import com.cardo.demojava.entity.Role;
 import com.cardo.demojava.entity.User;
 import com.cardo.demojava.mapper.FieldMapper;
-import com.cardo.demojava.mapper.RoleMapper;
 import com.cardo.demojava.mapper.UserMapper;
 import com.cardo.demojava.service.UserService;
-import com.cardo.demojava.util.MD5;
 import com.cardo.demojava.util.SnowflakeIdGenerator;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static com.cardo.demojava.contant.Code.*;
@@ -38,8 +31,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     private UserMapper userMapper;
     @Autowired
     private FieldMapper fieldMapper;
-    @Autowired
-    private RoleMapper roleMapper;
 
 
     @Override

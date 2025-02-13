@@ -2,7 +2,6 @@ package com.cardo.demojava.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.cardo.demojava.dto.UserDto;
 import com.cardo.demojava.entity.Response;
 import com.cardo.demojava.entity.User;
 import com.cardo.demojava.service.UserService;

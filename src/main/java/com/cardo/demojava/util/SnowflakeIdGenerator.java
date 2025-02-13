@@ -38,7 +38,13 @@ public class SnowflakeIdGenerator {
         long timestamp = currentTime();
         
         if (timestamp < lastTimestamp) {
-            throw new RuntimeException("Clock moved backwards. Refusing to generate id for " + (lastTimestamp - timestamp) + " milliseconds");
+            throw new RuntimeException("Clock moved backwards. Refusing to generate id");
+        }
+        
+        // 添加时间戳范围验证
+        long timestampDiff = timestamp - START_TIMESTAMP;
+        if (timestampDiff > (1L << TIMESTAMP_BIT)) {
+            throw new RuntimeException("Timestamp bits overflow");
         }
         
         if (lastTimestamp == timestamp) {

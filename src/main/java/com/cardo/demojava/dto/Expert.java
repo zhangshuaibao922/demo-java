@@ -1,11 +1,9 @@
 package com.cardo.demojava.dto;
 
-import com.cardo.demojava.entity.RelationShip;
 import lombok.Data;
 
 import java.io.Serializable;
 import java.util.List;
-import java.util.Map;
 
 @Data
 

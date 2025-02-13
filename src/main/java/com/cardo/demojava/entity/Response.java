@@ -2,7 +2,6 @@ package com.cardo.demojava.entity;
 
 import com.cardo.demojava.contant.Code;
 import io.swagger.annotations.ApiModel;
-import lombok.Data;
 
 import java.io.Serializable;
 

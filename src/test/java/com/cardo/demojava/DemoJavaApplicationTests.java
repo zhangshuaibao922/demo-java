@@ -1,13 +1,11 @@
 package com.cardo.demojava;
 
 import com.cardo.demojava.config.RedisService;
-import com.cardo.demojava.dto.Expert;
 import com.cardo.demojava.entity.*;
 import com.cardo.demojava.mapper.*;
 import com.cardo.demojava.service.ExpertService;
 import com.cardo.demojava.service.LoginService;
 import com.cardo.demojava.util.SendMailUtils;
-import com.cardo.demojava.util.SnowflakeIdGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -49,8 +47,7 @@ class DemoJavaApplicationTests {
         System.out.println(user.getRelationship());
         ObjectMapper objectMapper = new ObjectMapper();
         try {
-            List<RelationShip> relationShips = objectMapper.readValue(user.getRelationship(), new TypeReference<List<RelationShip>>() {
-            });
+            objectMapper.readValue(user.getRelationship(), new TypeReference<List<RelationShip>>() {});
             System.out.println(123);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);

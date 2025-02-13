@@ -1,8 +1,6 @@
 package com.cardo.demojava.contant;
 
 
-import org.apache.ibatis.annotations.Update;
-
 public enum Code {
 
     SUCCESS(200, "success"),

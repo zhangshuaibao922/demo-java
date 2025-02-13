@@ -25,7 +25,6 @@ import org.springframework.web.bind.annotation.RestController;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -74,7 +73,7 @@ public class OSSController {
          }
         // 生成 Excel
         XSSFWorkbook workbook = new XSSFWorkbook();
-        Sheet sheet = workbook.createSheet("用户信息"); // 创建一个名为“用户信息”的工作表
+        Sheet sheet = workbook.createSheet("用户信息"); // 创建一个名为"用户信息"的工作表
         // 填充标题行
         String[] headers = {"账号", "密码", "姓名","领域","权限","年限","评分"};
         Row headerRow = sheet.createRow(0); // 创建第一行（通常为标题行）
@@ -107,7 +106,7 @@ public class OSSController {
         try {
             ossClient.putObject(BUCKET_NAME, objectName, new ByteArrayInputStream(outputStream.toByteArray()));
             Date expiration = new Date(new Date().getTime() + 3600 * 1000); // 1小时后过期
-            URL url = ossClient.generatePresignedUrl(BUCKET_NAME, objectName, expiration);
+            ossClient.generatePresignedUrl(BUCKET_NAME, objectName, expiration);
             return Response.ok("https://"+BUCKET_NAME+"."+ENDPOINT+"/"+objectName);
         } finally {
             ossClient.shutdown();

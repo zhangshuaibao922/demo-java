@@ -9,7 +9,8 @@ public enum Code {
     ADD_FAIL(401,"新增失败"),
     UPDATE_FAIL(402,"修改失败"),
     DELETE_FAIL(403,"删除失败"),
-    PASSWORD_FAIL(405,"账号或密码不正确")
+    PASSWORD_FAIL(405,"账号或密码不正确"),
+    FILE_UPLOAD_FAIL(406,"文件上传失败")
     ;
 
 

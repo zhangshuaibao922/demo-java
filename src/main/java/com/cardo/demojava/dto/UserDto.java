@@ -1,7 +1,5 @@
 package com.cardo.demojava.dto;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -11,7 +9,6 @@ import java.io.Serializable;
 public class UserDto implements Serializable {
     /**  */
     @ApiModelProperty(name = "主键",notes = "")
-    @TableId(type= IdType.AUTO)
     private String id ;
     /** 账号 */
     @ApiModelProperty(name = "账号",notes = "")

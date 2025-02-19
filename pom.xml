@@ -25,11 +25,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
-        <!-- 使用 Jedis 作为 Redis 客户端 -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-redis</artifactId>
-        </dependency>
         <!-- 添加连接池依赖，这里使用 Jedis -->
         <dependency>
             <groupId>redis.clients</groupId>

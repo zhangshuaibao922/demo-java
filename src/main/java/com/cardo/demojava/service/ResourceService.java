@@ -11,4 +11,5 @@ import java.util.List;
 public interface ResourceService extends IService<Resource> {
     Response<List<ResourceDto>> getAllResources(String taskId);
     Response<String> addResource(String taskId, String userId, MultipartFile file);
+    Response<String> deleteResource(String id);
 }

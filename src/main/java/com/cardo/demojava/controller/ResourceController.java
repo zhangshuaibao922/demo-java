@@ -32,12 +32,21 @@ public class ResourceController {
     @Autowired
     private ResourceService resourceService;
 
-    @GetMapping("/all")
-    public Response<List<ResourceDto>> getAllResources(@RequestParam String taskId) {
+    @GetMapping("/all/{taskId}")
+    public Response<List<ResourceDto>> getAllResources(@PathVariable String taskId) {
         return resourceService.getAllResources(taskId);
     }
     @PostMapping("/add/{taskId}/{userId}")
     public Response<String> addResource(@PathVariable String taskId, @PathVariable String userId, @RequestParam("file") MultipartFile file) {
         return resourceService.addResource(taskId, userId, file);
+    }
+    /**
+     * 根据ID删除资源
+     * @param id 资源ID
+     * @return 删除结果
+     */
+    @GetMapping("/delete/{id}")
+    public Response<String> deleteResource(@PathVariable String id) {
+        return resourceService.deleteResource(id);
     }
 }

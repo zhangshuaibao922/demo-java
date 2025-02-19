@@ -60,6 +60,7 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
 
     @Override
     public Response<String> delete(String id) {
+        // TODO删除资源resource中的内容
         int i = taskMapper.deleteById(id);
         if (i > 0) {
             return Response.ok("OK");

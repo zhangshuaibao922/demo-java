@@ -11,7 +11,10 @@ public class ResourceDto {
     /** 任务id */
     @ApiModelProperty(name = "任务id",notes = "")
     private String taskId ;
-    /** 上传人id */
+        /** 上传人id */
+    @ApiModelProperty(name = "上传人id",notes = "")
+    private String userId ;
+    /** 上传人名称 */
     @ApiModelProperty(name = "上传人名称",notes = "")
     private String userName ;
     /** 文件类型 */

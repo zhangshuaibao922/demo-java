@@ -10,7 +10,9 @@ public enum Code {
     UPDATE_FAIL(402,"修改失败"),
     DELETE_FAIL(403,"删除失败"),
     PASSWORD_FAIL(405,"账号或密码不正确"),
-    FILE_UPLOAD_FAIL(406,"文件上传失败")
+    FILE_UPLOAD_FAIL(406,"文件上传失败"),
+    RESOURCE_NOT_FOUND(407,"资源不存在"),
+    SYSTEM_ERROR(408,"系统错误")
     ;
 
 

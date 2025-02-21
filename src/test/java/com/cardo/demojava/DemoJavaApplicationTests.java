@@ -1,8 +1,10 @@
 package com.cardo.demojava;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.cardo.demojava.config.RedisService;
 import com.cardo.demojava.entity.*;
 import com.cardo.demojava.mapper.*;
+import java.util.*;
 import com.cardo.demojava.service.ExpertService;
 import com.cardo.demojava.service.LoginService;
 import com.cardo.demojava.util.SendMailUtils;
@@ -15,6 +17,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.text.SimpleDateFormat;
+import java.util.TimeZone;
 
 @SpringBootTest
 class DemoJavaApplicationTests {
@@ -37,6 +41,8 @@ class DemoJavaApplicationTests {
     ColleagueMapper colleagueMapper;
     @Autowired
     ClassmateMapper classmateMapper;
+    @Autowired
+    TaskMapper taskMapper;
     @Test
     void contextLoads() {
         redisService.deleteKey("experts");
@@ -79,18 +85,20 @@ class DemoJavaApplicationTests {
     }
 
     @Test
-    void contextLoads4() throws JsonProcessingException {
-//        User user = userMapper.selectById(14);
-//        String relationship = user.getRelationship();
-//        Classmate classmate = new Classmate();
-//        classmate.setRelationship(relationship);
-//        classmate.setClassmateId("1");
-//        classmateMapper.insert(classmate);
-        User user = userMapper.selectById("1");
-        String relationship = user.getRelationship();
-                Classmate classmate = new Classmate();
-        classmate.setRelationship(relationship);
-        classmate.setClassmateId("14");
-        classmateMapper.insert(classmate);
+    void contextLoads4() {
+        // 使用精确到秒的时间格式
+
+        // // 构建查询条件
+        // LambdaQueryWrapper<Task> queryWrapper = new LambdaQueryWrapper<>();
+        // queryWrapper.eq(Task::getStatus, 1)
+        //         .ge(Task::getSiphonTime, now)
+        //         .lt(Task::getSiphonTime, oneHourLater);
+                
+        // System.out.println("当前时间：" + sdf.format(now));
+        // System.out.println("一小时后：" + sdf.format(oneHourLater));
+        
+        // // 获取任务并打印详细信息
+        // List<Task> tasks = taskMapper.selectList(queryWrapper);
+        // System.out.println("查询到的任务数量：" + tasks.size());
     }
 }

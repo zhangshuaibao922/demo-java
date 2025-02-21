@@ -31,16 +31,13 @@ public class Task implements Serializable{
     private String conditionId ;
     /** 抽取时间 */
     @ApiModelProperty(name = "抽取时间",notes = "")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private Date siphonTime ;
+    private String siphonTime ;
     /** 开始评审时间 */
     @ApiModelProperty(name = "开始评审时间",notes = "")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private Date startTime ;
+    private String startTime ;
     /** 结束时间 */
     @ApiModelProperty(name = "结束时间",notes = "")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private Date endTime ;
+    private String endTime ;
     /** 得分 */
     @ApiModelProperty(name = "得分",notes = "")
     private Double resultScore ;

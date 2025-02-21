@@ -11,6 +11,7 @@ import com.cardo.demojava.service.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -39,10 +40,12 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
         //将resouceid放在上传的时候确定
 //        SnowflakeIdGenerator snowflakeIdGenerator = new SnowflakeIdGenerator(1);
 //        task.setConditionId(snowflakeIdGenerator.nextIdAsString());
+
+
         int insert = taskMapper.insert(task);
         if (insert > 0) {
             return Response.ok("OK");
-        }else {
+        } else {
             return Response.error(ADD_FAIL);
         }
     }

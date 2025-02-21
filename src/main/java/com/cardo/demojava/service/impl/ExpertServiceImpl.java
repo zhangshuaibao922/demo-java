@@ -212,4 +212,38 @@ public class ExpertServiceImpl implements ExpertService {
             return Response.ok("OK");
         }
     }
+
+    @Override
+    public List<Expert> getAllExpert() {
+        List<User> users = userMapper.selectList(null);
+        List<Expert> experts = new ArrayList<>();
+        for (User user : users) {
+             Expert expert = new Expert();
+             expert.setId(user.getId());
+             expert.setName(user.getName());
+             List<String> classmate= new ArrayList<>();
+             List<Classmate> classmates = classmateMapper.selectList(new LambdaQueryWrapper<Classmate>().eq(Classmate::getRelationship, user.getRelationship()));
+             if(classmates != null && !classmates.isEmpty()) {
+                 // 提取 classmateId
+                 // 通过 classmateId 获取 User，并提取名字
+                 // 将名字收集到 List 中
+                 classmate= classmates.stream()
+                         .map(Classmate::getClassmateId) // 提取 classmateId
+                         .map(classmateId -> userMapper.selectById(classmateId).getName())
+                         .collect(Collectors.toList());
+             }
+             expert.setClassmate(classmate);
+             List<String> colleague = new ArrayList<>();
+             List<Colleague> colleagues = colleagueMapper.selectList(new LambdaQueryWrapper<Colleague>().eq(Colleague::getRelationship, user.getRelationship()));
+             if(colleagues != null && !colleagues.isEmpty()) {
+                 colleague=colleagues.stream()
+                         .map(Colleague::getColleagueId)
+                         .map(colleagueId-> userMapper.selectById(colleagueId).getName())
+                         .collect(Collectors.toList());
+             }
+             expert.setColleague(colleague);
+             experts.add(expert);
+         }
+         return experts;
+    }
 }

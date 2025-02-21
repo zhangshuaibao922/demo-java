@@ -22,4 +22,6 @@ public interface ExpertService {
     Response<String> deleteAllUser(List<Expert> experts);
 
     Response<IPage<Expert>> getAll(Page<User> pagination, String name) throws JsonProcessingException;
+
+    List<Expert> getAllExpert();
 }

@@ -15,10 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.text.SimpleDateFormat;
-import java.util.TimeZone;
 
 @SpringBootTest
 class DemoJavaApplicationTests {
@@ -77,28 +74,18 @@ class DemoJavaApplicationTests {
     }
     @Test
     void contextLoads3() {
-        List<String> list= new ArrayList<>();
-        list.add("3425178647@qq.com");
-
-        sendMailUtils.sendEmail(list, "测试发送邮件",
-                "您好！这是我发送的一封测试邮件。");
-    }
-
-    @Test
-    void contextLoads4() {
-        // 使用精确到秒的时间格式
-
-        // // 构建查询条件
-        // LambdaQueryWrapper<Task> queryWrapper = new LambdaQueryWrapper<>();
-        // queryWrapper.eq(Task::getStatus, 1)
-        //         .ge(Task::getSiphonTime, now)
-        //         .lt(Task::getSiphonTime, oneHourLater);
-                
-        // System.out.println("当前时间：" + sdf.format(now));
-        // System.out.println("一小时后：" + sdf.format(oneHourLater));
+        long currentTimestamp = System.currentTimeMillis();
+        long futureTimestamp = currentTimestamp + 3600000; // 1小时后的时间戳
+        String currentTime = String.valueOf(currentTimestamp);
+        String futureTime = String.valueOf(futureTimestamp);
         
-        // // 获取任务并打印详细信息
-        // List<Task> tasks = taskMapper.selectList(queryWrapper);
-        // System.out.println("查询到的任务数量：" + tasks.size());
+        List<Task> tasks = taskMapper.selectList(
+            new LambdaQueryWrapper<Task>()
+                .between(Task::getSiphonTime, currentTime, futureTime)
+                .eq(Task::getStatus, 1)
+                .isNotNull(Task::getConditionId)
+        );
+        System.out.println(tasks);
     }
+
 }

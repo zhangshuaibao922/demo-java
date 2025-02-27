@@ -15,10 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 @Service
 public class TaskScheduleService {
@@ -36,6 +33,7 @@ public class TaskScheduleService {
     @Autowired
     private TaskResultMapper taskResultMapper;
 
+    //TODO每小时执行一次1
     @Scheduled(fixedDelay = 3600000) 
     @Transactional
     public void checkAndFilterUsers() {
@@ -47,7 +45,7 @@ public class TaskScheduleService {
         List<Task> tasks = taskMapper.selectList(
             new LambdaQueryWrapper<Task>()
                 .between(Task::getSiphonTime, currentTime, futureTime)
-                .eq(Task::getStatus, 1)
+                .eq(Task::getStatus, 2)
                 .isNotNull(Task::getConditionId)
         );
         for (Task task : tasks) {
@@ -60,7 +58,7 @@ public class TaskScheduleService {
             // 获取条件列表
             List<Condtion> conditions = condtionMapper.selectList(
                 new LambdaQueryWrapper<Condtion>()
-                    .eq(Condtion::getId, task.getConditionId())
+                    .eq(Condtion::getConditionId, task.getConditionId())
             );
             if (conditions == null || conditions.isEmpty()) {
                 return;
@@ -72,9 +70,47 @@ public class TaskScheduleService {
 
             // 执行筛选
             List<User> filteredUsers = userFilterService.filterUsers(conditions, allUsers, expertMap);
+            
+            // 处理人数限制条件
+            Integer requiredPersonCount = null;
+            for (Condtion condition : conditions) {
+                if ("person".equals(condition.getConditionName()) && "=".equals(condition.getConditionIf())) {
+                    try {
+                        requiredPersonCount = Integer.parseInt(condition.getConditionValue());
+                        break;
+                    } catch (NumberFormatException e) {
+                        // 忽略无效的数值
+                    }
+                }
+            }
+            
+            // 如果有人数限制条件
+            if (requiredPersonCount != null && requiredPersonCount > 0) {
+                // 如果筛选出的人数不够
+                if (filteredUsers.size() < requiredPersonCount) {
+                    // 从未筛选出的用户中随机抽取补足
+                    List<User> remainingUsers = new java.util.ArrayList<>(allUsers);
+                    remainingUsers.removeAll(filteredUsers);
+                    
+                    // 随机打乱剩余用户列表
+                    java.util.Collections.shuffle(remainingUsers);
+                    
+                    // 添加需要的用户数量
+                    int needMore = requiredPersonCount - filteredUsers.size();
+                    for (int i = 0; i < needMore && i < remainingUsers.size(); i++) {
+                        filteredUsers.add(remainingUsers.get(i));
+                    }
+                } 
+                // 如果筛选出的人数超过要求
+                else if (filteredUsers.size() > requiredPersonCount) {
+                    // 随机打乱并只保留需要的数量
+                    java.util.Collections.shuffle(filteredUsers);
+                    filteredUsers = filteredUsers.subList(0, requiredPersonCount);
+                }
+            }
 
             // 更新任务状态并保存结果
-            task.setStatus(2); // 设置为抽取状态
+            task.setStatus(3); // 设置为抽取状态
             taskMapper.updateById(task);
 
             // 保存筛选结果到TaskResult

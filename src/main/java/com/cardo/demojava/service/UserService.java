@@ -14,6 +14,7 @@ import java.util.List;
  * @date : 2024-12-27
  */
 public interface UserService extends IService<User> {
+    
 
     Response<IPage<User>> queryUsers(Page<User> pagination, String name, String fieldName, String score);
 
@@ -24,4 +25,10 @@ public interface UserService extends IService<User> {
     Response<User> updateUser(User user);
 
     Response<String> deleteAllUser(List<User> users);
+
+    /**
+     * 获取用户总数
+     * @return 包含用户总数的响应对象
+     */
+    Response<Integer> getUserCount();
 }

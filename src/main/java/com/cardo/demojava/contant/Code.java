@@ -12,7 +12,8 @@ public enum Code {
     PASSWORD_FAIL(405,"账号或密码不正确"),
     FILE_UPLOAD_FAIL(406,"文件上传失败"),
     RESOURCE_NOT_FOUND(407,"资源不存在"),
-    SYSTEM_ERROR(408,"系统错误")
+    SYSTEM_ERROR(408,"系统错误"),
+    
     ;
 
 

@@ -44,18 +44,18 @@ public class TaskController {
      }
 
      @PostMapping("/delete/all")
-     public Response<String> deleteAllUser(@RequestBody List<Task> tasks) {
+     public Response<String> deleteAllTask(@RequestBody List<Task> tasks) {
          return taskService.deleteAll(tasks);
      }
 
      //删除
      @GetMapping("/delete/{id}")
-     public Response<String> deleteUser(@PathVariable String id) {
+     public Response<String> deleteTask(@PathVariable String id) {
          return taskService.delete(id);
      }
      //修改
      @PostMapping("/update")
-     public Response<Task> updateUser(@RequestBody Task tasks) {
-         return null;
+     public Response<Task> updateTask(@RequestBody Task task) {
+         return taskService.update(task);
      }
 }

@@ -101,4 +101,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             return Response.error(DELETE_FAIL);
         }
     }
+
+    @Override
+    public Response<Integer> getUserCount() {
+        Integer count = userMapper.selectCount(null);
+        return Response.ok(count);
+    }
 }

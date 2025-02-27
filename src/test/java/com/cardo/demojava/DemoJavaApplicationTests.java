@@ -2,11 +2,13 @@ package com.cardo.demojava;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.cardo.demojava.config.RedisService;
+import com.cardo.demojava.dto.Expert;
 import com.cardo.demojava.entity.*;
 import com.cardo.demojava.mapper.*;
 import java.util.*;
 import com.cardo.demojava.service.ExpertService;
 import com.cardo.demojava.service.LoginService;
+import com.cardo.demojava.service.TaskScheduleService;
 import com.cardo.demojava.util.SendMailUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -40,6 +42,8 @@ class DemoJavaApplicationTests {
     ClassmateMapper classmateMapper;
     @Autowired
     TaskMapper taskMapper;
+    @Autowired
+    TaskScheduleService taskScheduleService;
     @Test
     void contextLoads() {
         redisService.deleteKey("experts");
@@ -74,18 +78,7 @@ class DemoJavaApplicationTests {
     }
     @Test
     void contextLoads3() {
-        long currentTimestamp = System.currentTimeMillis();
-        long futureTimestamp = currentTimestamp + 3600000; // 1小时后的时间戳
-        String currentTime = String.valueOf(currentTimestamp);
-        String futureTime = String.valueOf(futureTimestamp);
-        
-        List<Task> tasks = taskMapper.selectList(
-            new LambdaQueryWrapper<Task>()
-                .between(Task::getSiphonTime, currentTime, futureTime)
-                .eq(Task::getStatus, 1)
-                .isNotNull(Task::getConditionId)
-        );
-        System.out.println(tasks);
+        taskScheduleService.checkAndFilterUsers();
     }
 
 }

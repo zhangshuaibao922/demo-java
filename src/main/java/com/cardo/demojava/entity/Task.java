@@ -41,7 +41,7 @@ public class Task implements Serializable{
     @ApiModelProperty(name = "得分",notes = "")
     private Double resultScore ;
      /** 状态 */
-     @ApiModelProperty(name = "状态",notes = "1初始化 2抽取状态 3评审状态 4评审完成 0废弃")
+     @ApiModelProperty(name = "状态",notes = "1初始化 2资源准备完成 3抽取状态 4评审状态 5评审完成 0废弃")
      private Integer status ;
      /**
       * 创建时间

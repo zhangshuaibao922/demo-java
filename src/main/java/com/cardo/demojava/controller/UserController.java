@@ -70,4 +70,10 @@ public class UserController{
      public Response<User> updateUser(@RequestBody User user) {
          return userService.updateUser(user);
      }
+
+     //获取用户总数
+     @GetMapping("/count")
+     public Response<Integer> getUserCount() {
+         return userService.getUserCount();
+     }
 }

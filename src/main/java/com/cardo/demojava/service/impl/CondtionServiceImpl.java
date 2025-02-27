@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cardo.demojava.entity.*;
 import com.cardo.demojava.mapper.CondtionMapper;
-import com.cardo.demojava.mapper.TaskMapper;
+// import com.cardo.demojava.mapper.TaskMapper;
 import com.cardo.demojava.service.CondtionService;
 
 import java.util.List;
@@ -18,8 +18,8 @@ public class CondtionServiceImpl extends ServiceImpl<CondtionMapper, Condtion> i
 
     @Autowired
     private CondtionMapper condtionMapper;
-    @Autowired
-    private TaskMapper taskMapper;
+    // @Autowired
+    // private TaskMapper taskMapper;
 
     @Override
     public Response<String> saveBatch(List<Condtion> condtions,String conditionId) {

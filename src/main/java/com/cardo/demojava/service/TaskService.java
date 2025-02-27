@@ -17,4 +17,6 @@ public interface TaskService extends IService<Task> {
     Response<String> deleteAll(List<Task> tasks);
 
     Response<String> delete(String id);
+
+    Response<Task> update(Task task);
 }

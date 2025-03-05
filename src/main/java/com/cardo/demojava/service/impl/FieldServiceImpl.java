@@ -1,5 +1,8 @@
 package com.cardo.demojava.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cardo.demojava.entity.Field;
 import com.cardo.demojava.entity.Response;
@@ -50,5 +53,17 @@ public class FieldServiceImpl extends ServiceImpl<FieldMapper, Field> implements
         }else {
             return Response.error(UPDATE_FAIL);
         }
+    }
+
+    @Override
+    public Response<IPage<Field>> queryFieldByPage(Page<Field> pagination, String fieldName) {
+        // 构建查询条件
+        LambdaQueryWrapper<Field> queryWrapper = new LambdaQueryWrapper<>();
+        if(fieldName != null && !fieldName.isEmpty()) {
+            queryWrapper.like(Field::getFieldName, fieldName);
+        }
+        // 执行分页查询
+        IPage<Field> result = fieldMapper.selectPage(pagination, queryWrapper);
+        return Response.ok(result);
     }
 }

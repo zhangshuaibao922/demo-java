@@ -1,5 +1,7 @@
 package com.cardo.demojava.controller;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cardo.demojava.entity.Field;
 import com.cardo.demojava.entity.Response;
 import com.cardo.demojava.service.FieldService;
@@ -20,6 +22,23 @@ import java.util.List;
 public class FieldController {
     @Autowired
     private FieldService fieldService;
+
+    /**
+      * 分页查询
+      * @param page 当前页码
+      * @param size 每页记录数
+      * @param fieldName 领域(可选条件)
+      * @return
+      */
+      @GetMapping("/page")
+      public Response<IPage<Field>> queryFieldByPage(
+              @RequestParam(defaultValue = "1") int page,
+              @RequestParam(defaultValue = "10") int size,
+              @RequestParam(required = false) String fieldName) {
+                Page<Field> pagination = new Page<>(page, size);
+                return fieldService.queryFieldByPage(pagination,fieldName);
+              }
+ 
     //全部
     @GetMapping("/all")
     public Response<List<Field>> getAll() {

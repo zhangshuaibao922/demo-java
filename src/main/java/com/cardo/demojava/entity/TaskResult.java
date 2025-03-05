@@ -18,7 +18,11 @@ public class TaskResult {
     private String taskId;
     
     private String userId;
+    private String userName ;
+    private Integer fieldId ;
     
+    private Integer score ;
+    private String description ;
      /**
       * 创建时间
       */

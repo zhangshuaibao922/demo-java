@@ -118,6 +118,10 @@ public class TaskScheduleService {
                 TaskResult taskResult = new TaskResult();
                 taskResult.setTaskId(task.getId());
                 taskResult.setUserId(user.getId());
+                taskResult.setUserName(user.getName());
+                taskResult.setFieldId(user.getFieldId());
+                taskResult.setScore(-1);
+                taskResult.setDescription("暂无评价");
                 taskResultMapper.insert(taskResult);
             }
             

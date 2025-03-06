@@ -11,11 +11,15 @@ import com.cardo.demojava.entity.TaskResult;
 
 public interface TaskResultService extends IService<TaskResult> {
     
-    Response<IPage<TaskResultDto>> queryTaskResultDtos(Page<TaskResult> pagination, String taskId, String name, String fieldName);
+    Response<IPage<TaskResultDto>> queryTaskResultDtos(Page<TaskResult> pagination, String taskId, String name, Integer fieldId);
 
     Response<Integer> getTaskResultDtoCount(String taskId);
 
     Response<String> deleteTaskResult(String id);
 
-    Response<String> deleteAllTaskResult(List<TaskResult> taskResults);
+    Response<String> deleteAllTaskResult(List<TaskResultDto> taskResultsDtos);
+
+    Response<String> add(TaskResult taskResult);
+
+    Response<String> update(TaskResult taskResult);
 }

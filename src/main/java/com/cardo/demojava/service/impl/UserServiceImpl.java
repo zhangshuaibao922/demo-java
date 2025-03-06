@@ -107,4 +107,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         Integer count = userMapper.selectCount(null);
         return Response.ok(count);
     }
+
+    @Override
+    public Response<List<User>> getUserByUsername(String username) {
+        List<User> users = userMapper.selectList(new LambdaQueryWrapper<User>().like(User::getName, username));
+        if(users.size() > 0) {
+            return Response.ok(users);
+        }else {
+            return Response.error(NONE);
+        }
+    }
 }

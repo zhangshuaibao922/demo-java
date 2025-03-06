@@ -71,6 +71,11 @@ public class UserController{
          return userService.updateUser(user);
      }
 
+     @PostMapping("get/{username}")
+     public Response<List<User>> getUserByUsername(@PathVariable String username) {
+         return userService.getUserByUsername(username);
+     }
+
      //获取用户总数
      @GetMapping("/count")
      public Response<Integer> getUserCount() {

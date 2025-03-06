@@ -31,4 +31,6 @@ public interface UserService extends IService<User> {
      * @return 包含用户总数的响应对象
      */
     Response<Integer> getUserCount();
+
+    Response<List<User>> getUserByUsername(String username);
 }

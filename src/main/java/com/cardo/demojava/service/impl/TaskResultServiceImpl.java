@@ -37,19 +37,14 @@ public class TaskResultServiceImpl extends ServiceImpl<TaskResultMapper, TaskRes
 
     @Override
     public Response<IPage<TaskResultDto>> queryTaskResultDtos(Page<TaskResult> pagination, String taskId, String name,
-            String fieldName) {
+            Integer fieldId) {
         LambdaQueryWrapper<TaskResult> queryWrapper = new LambdaQueryWrapper<>();
         if (name != null && !name.trim().isEmpty()) {
             queryWrapper.like(TaskResult::getUserName, name);
         }
 
-        if (fieldName != null && !fieldName.trim().isEmpty()) {
-            LambdaQueryWrapper<Field> fieldLambdaQueryWrapper = new LambdaQueryWrapper<>();
-            fieldLambdaQueryWrapper.like(Field::getFieldName, fieldName);
-            List<Field> fields = fieldMapper.selectList(fieldLambdaQueryWrapper);
-            for (Field field : fields) {
-                queryWrapper.eq(TaskResult::getFieldId, field.getFieldId());
-            }
+        if (fieldId != null) {
+            queryWrapper.eq(TaskResult::getFieldId, fieldId);
         }
         queryWrapper.eq(TaskResult::getTaskId, taskId);
         Page<TaskResult> taskResultPage = taskResultMapper.selectPage(pagination, queryWrapper);
@@ -89,19 +84,39 @@ public class TaskResultServiceImpl extends ServiceImpl<TaskResultMapper, TaskRes
         int delete = taskResultMapper.deleteById(id);
         if(delete > 0) {
             return Response.ok("OK");
+        }else { 
+            return Response.error(DELETE_FAIL);
+        }
+    }
+
+    @Override
+    public Response<String> deleteAllTaskResult(List<TaskResultDto> taskResultsDtos) {
+        List<String> ids = taskResultsDtos.stream().map(TaskResultDto::getId).collect(Collectors.toList());
+        int delete = taskResultMapper.deleteBatchIds(ids);
+        if(delete > 0) {
+            return Response.ok("OK");
         }else {
             return Response.error(DELETE_FAIL);
         }
     }
 
     @Override
-    public Response<String> deleteAllTaskResult(List<TaskResult> taskResults) {
-        List<String> ids = taskResults.stream().map(TaskResult::getId).collect(Collectors.toList());
-        int delete = taskResultMapper.deleteBatchIds(ids);
-        if(delete > 0) {
+    public Response<String> add(TaskResult taskResult) {
+        int insert = taskResultMapper.insert(taskResult);
+        if(insert > 0) {
             return Response.ok("OK");
         }else {
-            return Response.error(DELETE_FAIL);
+            return Response.error(ADD_FAIL);
+        }
+    }
+
+    @Override
+    public Response<String> update(TaskResult taskResult) {
+        int update = taskResultMapper.updateById(taskResult);
+        if(update > 0) {
+            return Response.ok("OK");
+        }else {
+            return Response.error(UPDATE_FAIL);
         }
     }
 }

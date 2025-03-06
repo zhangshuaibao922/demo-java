@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.aliyuncs.ecs.model.v20140526.DescribeTasksResponse.Task;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cardo.demojava.dto.TaskResultDto;
@@ -31,7 +33,7 @@ public class TaskResultController {
       * @param size 每页记录数
       * @param taskId 任务id
       * @param name 用户名字(可选条件)
-      * @param fieldName 领域(可选条件)
+      * @param fieldId 领域id(可选条件)
       * @return
       */
       @GetMapping("/page")
@@ -40,26 +42,39 @@ public class TaskResultController {
               @RequestParam(defaultValue = "10") int size,
               @RequestParam(required = true) String taskId,
               @RequestParam(required = false) String name,
-              @RequestParam(required = false) String fieldName) {
+              @RequestParam(required = false) Integer fieldId) {
  
           // 构建分页参数
           Page<TaskResult> pagination = new Page<>(page, size);
  
           // 调用服务层方法
-          return taskResultService.queryTaskResultDtos(pagination,taskId, name, fieldName);
+          return taskResultService.queryTaskResultDtos(pagination,taskId, name, fieldId);
       }
 
-           //删除
+      //新增
+     @PostMapping("/add")
+     public Response<String> addTaskResult(@RequestBody TaskResult taskResult) {
+         return taskResultService.add(taskResult);
+     }
+
+     //修改
+     @PostMapping("/update")
+     public Response<String> updateTaskResult(@RequestBody TaskResult taskResult) {
+         return taskResultService.update(taskResult);
+     }
+
+      //删除
      @GetMapping("/delete/{id}")
      public Response<String> deleteTaskResult(@PathVariable String id) {
          return taskResultService.deleteTaskResult(id);
      }
+     //删除全部
      @PostMapping("/delete/all")
-     public Response<String> deleteAllTaskResult(@RequestBody List<TaskResult> taskResults) {
-         return taskResultService.deleteAllTaskResult(taskResults);
+     public Response<String> deleteAllTaskResult(@RequestBody List<TaskResultDto> taskResultsDtos) {
+         return taskResultService.deleteAllTaskResult(taskResultsDtos);
      }
 
-           //获取用户总数
+    //获取用户总数
      @GetMapping("/count/{taskId}")
      public Response<Integer> getTaskResultDtoCount(@PathVariable String taskId) {
          return taskResultService.getTaskResultDtoCount(taskId);

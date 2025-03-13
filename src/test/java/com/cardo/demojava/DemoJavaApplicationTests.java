@@ -10,6 +10,7 @@ import com.cardo.demojava.service.ExpertService;
 import com.cardo.demojava.service.LoginService;
 import com.cardo.demojava.service.TaskScheduleService;
 import com.cardo.demojava.util.SendMailUtils;
+import com.cardo.demojava.util.SnowflakeIdGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -64,15 +65,17 @@ class DemoJavaApplicationTests {
     void contextLoads2() {
         for (int i = 0; i < 10; i++) {
             User user = new User();
-            user.setAccount(String.valueOf(200+i));
-            user.setPassword(String.valueOf(200+i));
+            user.setAccount(String.valueOf(300+i));
+            user.setPassword(String.valueOf(300+i));
             user.setName(String.valueOf(200+i));
             user.setEmail("2742520302@qq.com");
-            user.setRelationship("{'201': '同门', '202': '上级'}");
+            SnowflakeIdGenerator snowflakeIdGenerator = new SnowflakeIdGenerator(1);
+            String relationship = snowflakeIdGenerator.nextIdAsString();
+            user.setRelationship(relationship);
             user.setFieldId(1);
             user.setRoleId(1);
             user.setOld(1.00);
-            user.setScore(100.00);
+            user.setScore(0.00);
             userMapper.insert(user);
         }
     }

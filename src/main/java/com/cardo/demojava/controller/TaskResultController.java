@@ -52,10 +52,11 @@ public class TaskResultController {
       }
 
       //新增
-     @PostMapping("/add")
-     public Response<String> addTaskResult(@RequestBody TaskResult taskResult) {
-         return taskResultService.add(taskResult);
+     @PostMapping("/add/{taskId}/{userId}")
+     public Response<String> addTaskResult(@PathVariable String taskId, @PathVariable String userId) {
+         return taskResultService.add(taskId, userId);
      }
+     
 
      //修改
      @PostMapping("/update")

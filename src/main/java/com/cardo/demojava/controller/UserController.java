@@ -2,6 +2,7 @@ package com.cardo.demojava.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.cardo.demojava.dto.UserVo;
 import com.cardo.demojava.entity.Response;
 import com.cardo.demojava.entity.User;
 import com.cardo.demojava.service.UserService;
@@ -71,9 +72,9 @@ public class UserController{
          return userService.updateUser(user);
      }
 
-     @PostMapping("get/{username}")
-     public Response<List<User>> getUserByUsername(@PathVariable String username) {
-         return userService.getUserByUsername(username);
+     @PostMapping("get/{name}")
+     public Response<List<UserVo>> getUserByUsername(@PathVariable String name) {
+         return userService.getUserByUsername(name);
      }
 
      //获取用户总数

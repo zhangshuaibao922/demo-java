@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.cardo.demojava.dto.UserVo;
 import com.cardo.demojava.entity.Field;
 import com.cardo.demojava.entity.Response;
 import com.cardo.demojava.entity.User;
@@ -95,6 +96,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     public Response<String> deleteAllUser(List<User> users) {
         List<String> collect = users.stream().map(User::getId).collect(Collectors.toList());
         int delete = userMapper.deleteBatchIds(collect);
+        //TODO 删除关联关系
         if(delete > 0) {
             return Response.ok("OK");
         }else {
@@ -109,10 +111,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
-    public Response<List<User>> getUserByUsername(String username) {
+    public Response<List<UserVo>> getUserByUsername(String username) {
         List<User> users = userMapper.selectList(new LambdaQueryWrapper<User>().like(User::getName, username));
         if(users.size() > 0) {
-            return Response.ok(users);
+            return Response.ok(users.stream().map(user -> {
+                UserVo userVo = new UserVo();
+                userVo.setId(user.getId());
+                userVo.setName(user.getName());
+                return userVo;
+            }).collect(Collectors.toList()));
         }else {
             return Response.error(NONE);
         }

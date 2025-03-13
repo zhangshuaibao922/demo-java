@@ -3,6 +3,7 @@ package com.cardo.demojava.service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.cardo.demojava.dto.UserVo;
 import com.cardo.demojava.entity.Response;
 import com.cardo.demojava.entity.User;
 
@@ -32,5 +33,5 @@ public interface UserService extends IService<User> {
      */
     Response<Integer> getUserCount();
 
-    Response<List<User>> getUserByUsername(String username);
+    Response<List<UserVo>> getUserByUsername(String username);
 }

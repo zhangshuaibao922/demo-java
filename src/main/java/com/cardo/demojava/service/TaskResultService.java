@@ -19,7 +19,7 @@ public interface TaskResultService extends IService<TaskResult> {
 
     Response<String> deleteAllTaskResult(List<TaskResultDto> taskResultsDtos);
 
-    Response<String> add(TaskResult taskResult);
+    Response<String> add(String taskId, String userId);
 
     Response<String> update(TaskResult taskResult);
 }

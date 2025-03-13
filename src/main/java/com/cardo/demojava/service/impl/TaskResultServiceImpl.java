@@ -49,9 +49,12 @@ public class TaskResultServiceImpl extends ServiceImpl<TaskResultMapper, TaskRes
         queryWrapper.eq(TaskResult::getTaskId, taskId);
         Page<TaskResult> taskResultPage = taskResultMapper.selectPage(pagination, queryWrapper);
         List<TaskResult> taskResults = taskResultPage.getRecords();
+        if(taskResults.size() == 0) {
+            return Response.error(NONE);
+        }
         List<TaskResultDto> taskResultDtos = new ArrayList<>();
         Task task = taskMapper.selectById(taskResults.get(0).getTaskId());
-
+        
         for (TaskResult taskResult : taskResults) {
             TaskResultDto taskResultDto = new TaskResultDto();
             BeanUtils.copyProperties(taskResult, taskResultDto);
@@ -101,7 +104,15 @@ public class TaskResultServiceImpl extends ServiceImpl<TaskResultMapper, TaskRes
     }
 
     @Override
-    public Response<String> add(TaskResult taskResult) {
+    public Response<String> add(String taskId, String userId) {
+        TaskResult taskResult = new TaskResult();
+        taskResult.setTaskId(taskId);
+        taskResult.setUserId(userId);
+        User user = userMapper.selectById(userId);
+        taskResult.setUserName(user.getName());
+        taskResult.setFieldId(user.getFieldId());
+        taskResult.setScore(-1);
+        taskResult.setDescription("暂无评价");
         int insert = taskResultMapper.insert(taskResult);
         if(insert > 0) {
             return Response.ok("OK");

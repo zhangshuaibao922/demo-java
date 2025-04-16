@@ -65,7 +65,10 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
         try {
             // 获取文件信息
             String originalFilename = file.getOriginalFilename();
-            String fileType = file.getContentType();
+            String fileType = "";
+            if (originalFilename != null) {
+                fileType = originalFilename.substring(originalFilename.lastIndexOf(".") + 1);
+            }
             
             // 生成OSS中的对象名称（使用时间戳避免重名）
             String objectName = System.currentTimeMillis() + "_" + originalFilename;

@@ -104,9 +104,7 @@ public class TaskResultServiceImpl extends ServiceImpl<TaskResultMapper, TaskRes
     }
 
     @Override
-    public Response<String> add( String userId,String taskId) {
-
-
+    public Response<String> add(String taskId, String userId) {
         TaskResult taskResult = new TaskResult();
         taskResult.setTaskId(taskId);
         taskResult.setUserId(userId);

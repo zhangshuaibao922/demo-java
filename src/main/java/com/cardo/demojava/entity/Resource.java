@@ -32,6 +32,8 @@ public class Resource implements Serializable,Cloneable{
     /** 文件url链接 */
     @ApiModelProperty(name = "文件url链接",notes = "")
     private String resourceUrl ;
+     @ApiModelProperty(name = "文件url链接",notes = "")
+     private String resourceName ;
      /** 创建时间 */
      @ApiModelProperty(name = "创建时间",notes = "")
      @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)

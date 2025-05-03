@@ -8,6 +8,9 @@ import com.cardo.demojava.mapper.CondtionMapper;
 import com.cardo.demojava.mapper.TaskMapper;
 import com.cardo.demojava.mapper.TaskResultMapper;
 import com.cardo.demojava.mapper.UserMapper;
+
+import lombok.extern.slf4j.Slf4j;
+
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.cardo.demojava.dto.Expert;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -16,8 +19,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.ArrayList;
 
 @Service
+@Slf4j
 public class TaskScheduleService {
     
     @Autowired
@@ -33,8 +38,8 @@ public class TaskScheduleService {
     @Autowired
     private TaskResultMapper taskResultMapper;
 
-    //TODO每小时执行一次1
-    @Scheduled(fixedDelay = 3600000) 
+    //每小时执行一次，先执行抽取任务
+    @Scheduled(fixedDelay = 3600000, initialDelay = 0) 
     @Transactional
     public void checkAndFilterUsers() {
         long currentTimestamp = System.currentTimeMillis();
@@ -50,6 +55,144 @@ public class TaskScheduleService {
         );
         for (Task task : tasks) {
             processTask(task);
+        }
+    }
+    //每小时执行一次，检查已完成评审的任务
+    @Scheduled(fixedDelay = 3600000, initialDelay = 600000)
+    @Transactional
+    public void checkAndFinishReview() {
+        long currentTimestamp = System.currentTimeMillis();
+        long pastTimestamp = currentTimestamp - 3600000; // 1小时前的时间戳
+        String currentTime = String.valueOf(currentTimestamp);
+        String pastTime = String.valueOf(pastTimestamp);
+        
+        // 查询状态为4（评审状态）且结束时间在一小时前到当前之间的任务
+        List<Task> tasks = taskMapper.selectList(
+            new LambdaQueryWrapper<Task>()
+                .between(Task::getEndTime, pastTime, currentTime)
+                .eq(Task::getStatus, 4)
+        );
+        
+        log.info("开始检查已完成评审的任务，找到{}个需要结束评审的任务", tasks.size());
+        
+        for (Task task : tasks) {
+            // 查询该任务的所有TaskResult记录
+            List<TaskResult> taskResults = taskResultMapper.selectList(
+                new LambdaQueryWrapper<TaskResult>()
+                    .eq(TaskResult::getTaskId, task.getId())
+            );
+            
+            // 计算平均分数，去掉最高分和最低分
+            double totalScore = 0;
+            int validResultCount = 0;
+            
+            // 找出有效的评分结果
+            List<TaskResult> validResults = new ArrayList<>();
+            for (TaskResult result : taskResults) {
+                if (result.getScore() != null && result.getScore() >= 0) {
+                    validResults.add(result);
+                }
+            }
+            
+            if (validResults.size() >= 3) {  // 至少需要3个评分才能去掉最高分和最低分
+                // 按分数排序
+                TaskResult minScoreResult = null;
+                TaskResult maxScoreResult = null;
+                int minScore = Integer.MAX_VALUE;
+                int maxScore = Integer.MIN_VALUE;
+                
+                // 找出最高分和最低分
+                for (TaskResult result : validResults) {
+                    if (result.getScore() < minScore) {
+                        minScore = result.getScore();
+                        minScoreResult = result;
+                    }
+                    if (result.getScore() > maxScore) {
+                        maxScore = result.getScore();
+                        maxScoreResult = result;
+                    }
+                }
+                
+                // 更新最高分和最低分对应用户的score+1
+                if (minScoreResult != null) {
+                    User minScoreUser = userMapper.selectById(minScoreResult.getUserId());
+                    if (minScoreUser != null) {
+                        minScoreUser.setScore(minScoreUser.getScore() + 1);
+                        userMapper.updateById(minScoreUser);
+                    }
+                }
+                
+                if (maxScoreResult != null) {
+                    User maxScoreUser = userMapper.selectById(maxScoreResult.getUserId());
+                    if (maxScoreUser != null) {
+                        maxScoreUser.setScore(maxScoreUser.getScore() + 1);
+                        userMapper.updateById(maxScoreUser);
+                    }
+                }
+                
+                // 计算去掉最高分和最低分后的总分
+                for (TaskResult result : validResults) {
+                    if (result != minScoreResult && result != maxScoreResult) {
+                        totalScore += result.getScore();
+                        validResultCount++;
+                    }
+                }
+            } else {
+                // 如果评分数量少于3，则使用所有有效评分
+                for (TaskResult result : validResults) {
+                    totalScore += result.getScore();
+                    validResultCount++;
+                }
+            }
+            // 如果有有效评分，计算平均分并更新任务
+            if (validResultCount > 0) {
+                double averageScore = totalScore / validResultCount;
+                task.setResultScore(averageScore);
+            }
+            
+            // 更新任务状态为5（评审完成）
+            task.setStatus(5);
+            taskMapper.updateById(task);
+            
+            log.info("任务ID: {}, 任务名称: {}, 评审人数: {}, 最终得分: {}", 
+                    task.getId(), task.getTaskName(), taskResults.size(), task.getResultScore());
+        }
+    }
+
+    //每小时执行一次，检查评审任务，在抽取任务之后执行
+    @Scheduled(fixedDelay = 3600000, initialDelay = 300000)
+    @Transactional
+    public void checkAndStartReview() {
+        long currentTimestamp = System.currentTimeMillis();
+        long futureTimestamp = currentTimestamp + 3600000; // 1小时后的时间戳
+        String currentTime = String.valueOf(currentTimestamp);
+        String futureTime = String.valueOf(futureTimestamp);
+        
+        // 查询状态为3（抽取状态）且开始评审时间在当前到一小时后之间的任务
+        List<Task> tasks = taskMapper.selectList(
+            new LambdaQueryWrapper<Task>()
+                .between(Task::getStartTime, currentTime, futureTime)
+                .eq(Task::getStatus, 3)
+        );
+        // 记录日志
+        log.info("开始检查评审任务，找到{}个需要开始评审的任务", tasks.size());
+        
+        // 对于每个任务，获取其对应的所有评审结果
+        for (Task task : tasks) {
+            // 查询该任务的所有TaskResult记录
+            List<TaskResult> taskResults = taskResultMapper.selectList(
+                new LambdaQueryWrapper<TaskResult>()
+                    .eq(TaskResult::getTaskId, task.getId())
+            );
+            //TODO发送系统通知
+            // 记录该任务的评审人数
+            log.info("任务ID: {}, 任务名称: {}, 评审人数: {}", 
+                    task.getId(), task.getTaskName(), taskResults.size());
+        }
+        // 将这些任务的状态更新为4（评审状态）
+        for (Task task : tasks) {
+            task.setStatus(4);
+            taskMapper.updateById(task);
         }
     }
 

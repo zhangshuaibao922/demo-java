@@ -4,13 +4,11 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.cardo.demojava.entity.Condtion;
-import com.cardo.demojava.entity.Resource;
-import com.cardo.demojava.entity.Response;
-import com.cardo.demojava.entity.Task;
+import com.cardo.demojava.entity.*;
 import com.cardo.demojava.mapper.CondtionMapper;
 import com.cardo.demojava.mapper.ResourceMapper;
 import com.cardo.demojava.mapper.TaskMapper;
+import com.cardo.demojava.mapper.TaskResultMapper;
 import com.cardo.demojava.service.TaskService;
 import com.cardo.demojava.util.SnowflakeIdGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,8 +27,10 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
     ResourceMapper resourceMapper;
     @Autowired
     CondtionMapper condtionMapper;
+    @Autowired
+    TaskResultMapper taskResultMapper;
     @Override
-    public Response<IPage<Task>> queryTasks(Page<Task> pagination, String taskName, Integer status) {
+    public Response<IPage<Task>> queryTasks(Page<Task> pagination, String taskName, Integer status,String id) {
         LambdaQueryWrapper<Task> taskLambdaQueryWrapper = new LambdaQueryWrapper<>();
         if(taskName != null && !taskName.isEmpty()) {
             taskLambdaQueryWrapper.like(Task::getTaskName, taskName);
@@ -40,6 +40,18 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
             taskLambdaQueryWrapper.eq(Task::getStatus, status);
         }
         Page<Task> taskPage = taskMapper.selectPage(pagination, taskLambdaQueryWrapper);
+        List<Task> records = taskPage.getRecords();
+        if(id!=null){
+            // 过滤任务列表，只保留用户参与的任务
+            records = records.stream().filter(task -> {
+                LambdaQueryWrapper<TaskResult> queryWrapper = new LambdaQueryWrapper<>();
+                queryWrapper.eq(TaskResult::getUserId, id)
+                           .eq(TaskResult::getTaskId, task.getId())
+                        .eq(TaskResult::getScore,-1);
+                return taskResultMapper.selectCount(queryWrapper) > 0;
+            }).collect(Collectors.toList());
+            taskPage.setRecords(records);
+        }
         return Response.ok(taskPage);
     }
 
@@ -80,6 +92,7 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
         LambdaQueryWrapper<Condtion> condtionLambdaQueryWrapper = new LambdaQueryWrapper<>();
         condtionMapper.delete(condtionLambdaQueryWrapper.eq(Condtion::getConditionId,task.getConditionId()));
 
+        taskResultMapper.delete(new LambdaQueryWrapper<TaskResult>().eq(TaskResult::getTaskId,task.getId()));
         if (i > 0) {
             return Response.ok("OK");
         } else {

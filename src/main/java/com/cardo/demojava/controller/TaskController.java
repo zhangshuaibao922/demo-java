@@ -30,11 +30,12 @@ public class TaskController {
              @RequestParam(defaultValue = "1") int page,
              @RequestParam(defaultValue = "10") int size,
              @RequestParam(required = false) String taskName,
-             @RequestParam(required = false) Integer status) {
+             @RequestParam(required = false) Integer status,
+             @RequestParam(required = false)String id) {
 
          // 构建分页参数
          Page<Task> pagination = new Page<>(page, size);
-         return taskService.queryTasks(pagination,taskName,status);
+         return taskService.queryTasks(pagination,taskName,status,id);
      }
 
      //新增

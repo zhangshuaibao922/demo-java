@@ -23,4 +23,5 @@ public class ResourceDto {
     /** 文件url链接 */
     @ApiModelProperty(name = "文件url链接",notes = "")
     private String resourceUrl ;
+    private String resourceName ;
 }

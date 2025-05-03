@@ -38,38 +38,38 @@ public class TaskResultServiceImpl extends ServiceImpl<TaskResultMapper, TaskRes
     @Override
     public Response<IPage<TaskResultDto>> queryTaskResultDtos(Page<TaskResult> pagination, String taskId, String name,
             Integer fieldId) {
-//        LambdaQueryWrapper<TaskResult> queryWrapper = new LambdaQueryWrapper<>();
-//        if (name != null && !name.trim().isEmpty()) {
-//            queryWrapper.like(TaskResult::getUserName, name);
-//        }
-//
-//        if (fieldId != null) {
-//            queryWrapper.eq(TaskResult::getFieldId, fieldId);
-//        }
-//        queryWrapper.eq(TaskResult::getTaskId, taskId);
-//        Page<TaskResult> taskResultPage = taskResultMapper.selectPage(pagination, queryWrapper);
-//        List<TaskResult> taskResults = taskResultPage.getRecords();
-//        if(taskResults.size() == 0) {
-//            return Response.error(NONE);
-//        }
-//        List<TaskResultDto> taskResultDtos = new ArrayList<>();
-//        Task task = taskMapper.selectById(taskResults.get(0).getTaskId());
-//
-//        for (TaskResult taskResult : taskResults) {
-//            TaskResultDto taskResultDto = new TaskResultDto();
-//            BeanUtils.copyProperties(taskResult, taskResultDto);
-//            taskResultDto.setTaskName(task.getTaskName());
-//            User user = userMapper.selectById(taskResult.getUserId());
-//            taskResultDto.setEmail(user.getEmail());
-//            Field field = fieldMapper.selectById(taskResult.getFieldId());
-//            taskResultDto.setFieldName(field.getFieldName());
-//            taskResultDtos.add(taskResultDto);
-//        }
+        LambdaQueryWrapper<TaskResult> queryWrapper = new LambdaQueryWrapper<>();
+        if (name != null && !name.trim().isEmpty()) {
+            queryWrapper.like(TaskResult::getUserName, name);
+        }
+
+        if (fieldId != null) {
+            queryWrapper.eq(TaskResult::getFieldId, fieldId);
+        }
+        queryWrapper.eq(TaskResult::getTaskId, taskId);
+        Page<TaskResult> taskResultPage = taskResultMapper.selectPage(pagination, queryWrapper);
+        List<TaskResult> taskResults = taskResultPage.getRecords();
+        if(taskResults.size() == 0) {
+            return Response.error(NONE);
+        }
+        List<TaskResultDto> taskResultDtos = new ArrayList<>();
+        Task task = taskMapper.selectById(taskResults.get(0).getTaskId());
+
+        for (TaskResult taskResult : taskResults) {
+            TaskResultDto taskResultDto = new TaskResultDto();
+            BeanUtils.copyProperties(taskResult, taskResultDto);
+            taskResultDto.setTaskName(task.getTaskName());
+            User user = userMapper.selectById(taskResult.getUserId());
+            taskResultDto.setEmail(user.getEmail());
+            Field field = fieldMapper.selectById(taskResult.getFieldId());
+            taskResultDto.setFieldName(field.getFieldName());
+            taskResultDtos.add(taskResultDto);
+        }
         Page<TaskResultDto> dtoPage = new Page<>();
-//        dtoPage.setRecords(taskResultDtos);
-//        dtoPage.setTotal(taskResultPage.getTotal());
-//        dtoPage.setCurrent(taskResultPage.getCurrent());
-//        dtoPage.setSize(taskResultPage.getSize());
+        dtoPage.setRecords(taskResultDtos);
+        dtoPage.setTotal(taskResultPage.getTotal());
+        dtoPage.setCurrent(taskResultPage.getCurrent());
+        dtoPage.setSize(taskResultPage.getSize());
         
         return Response.ok(dtoPage);
     }
@@ -123,11 +123,26 @@ public class TaskResultServiceImpl extends ServiceImpl<TaskResultMapper, TaskRes
 
     @Override
     public Response<String> update(TaskResult taskResult) {
-        int update = taskResultMapper.updateById(taskResult);
+        TaskResult updateResult = taskResultMapper.selectOne(
+                new LambdaQueryWrapper<TaskResult>()
+                        .eq(TaskResult::getTaskId, taskResult.getTaskId())
+                        .eq(TaskResult::getUserId, taskResult.getUserId()));
+        updateResult.setScore(taskResult.getScore());
+        updateResult.setDescription(taskResult.getDescription());
+        int update = taskResultMapper.updateById(updateResult);
         if(update > 0) {
             return Response.ok("OK");
         }else {
             return Response.error(UPDATE_FAIL);
         }
+    }
+
+    @Override
+    public Response<TaskResult> queryOne(String taskId, String id) {
+        TaskResult result = taskResultMapper.selectOne(
+                new LambdaQueryWrapper<TaskResult>()
+                        .eq(TaskResult::getTaskId, taskId)
+                        .eq(TaskResult::getUserId, id));
+        return Response.ok(result);
     }
 }

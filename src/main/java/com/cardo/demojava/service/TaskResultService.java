@@ -22,4 +22,6 @@ public interface TaskResultService extends IService<TaskResult> {
     Response<String> add(String taskId, String userId);
 
     Response<String> update(TaskResult taskResult);
+
+    Response<TaskResult> queryOne(String taskId, String id);
 }

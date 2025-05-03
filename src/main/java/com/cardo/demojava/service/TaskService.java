@@ -10,7 +10,7 @@ import java.util.List;
 
 
 public interface TaskService extends IService<Task> {
-    Response<IPage<Task>> queryTasks(Page<Task> pagination, String taskName, Integer status);
+    Response<IPage<Task>> queryTasks(Page<Task> pagination, String taskName, Integer status,String id);
 
     Response<String> add(Task task);
 

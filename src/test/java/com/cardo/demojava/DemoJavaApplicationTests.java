@@ -81,7 +81,7 @@ class DemoJavaApplicationTests {
     }
     @Test
     void contextLoads3() {
-        taskScheduleService.checkAndFilterUsers();
+        taskScheduleService.checkAndFinishReview();
     }
 
 }

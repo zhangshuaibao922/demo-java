@@ -28,6 +28,7 @@ public class Task implements Serializable{
     /** 条件id */
     @ApiModelProperty(name = "条件id",notes = "")
     private String conditionId ;
+     private String userId;
     /** 抽取时间 */
     @ApiModelProperty(name = "抽取时间",notes = "")
     private String siphonTime ;

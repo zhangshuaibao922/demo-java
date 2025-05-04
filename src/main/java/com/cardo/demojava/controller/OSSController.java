@@ -93,7 +93,7 @@ public class OSSController {
         Sheet sheet = workbook.createSheet("任务结果"); // 创建工作表
         
         // 填充标题行
-        String[] headers = {"任务名称", "用户名", "用户邮箱", "领域", "分数", "评语"};
+        String[] headers = { "用户名", "用户邮箱", "领域", "分数", "评语"};
         Row headerRow = sheet.createRow(0);
         for (int i = 0; i < headers.length; i++) {
             Cell cell = headerRow.createCell(i);
@@ -104,12 +104,11 @@ public class OSSController {
         int rowNum = 1;
         for (TaskResultDto result : taskResultDtos) {
             Row row = sheet.createRow(rowNum++);
-            row.createCell(0).setCellValue(result.getTaskName());
-            row.createCell(1).setCellValue(result.getUserName());
-            row.createCell(2).setCellValue(result.getEmail());
-            row.createCell(3).setCellValue(result.getFieldName());
-            row.createCell(4).setCellValue(result.getScore());
-            row.createCell(5).setCellValue(result.getDescription());
+            row.createCell(0).setCellValue(result.getUserName());
+            row.createCell(1).setCellValue(result.getEmail());
+            row.createCell(2).setCellValue(result.getFieldName());
+            row.createCell(3).setCellValue(result.getScore());
+            row.createCell(4).setCellValue(result.getDescription());
         }
         
         // 写入到输出流
@@ -121,7 +120,7 @@ public class OSSController {
         }
         
         // 上传到 OSS
-        String objectName = "task_result_" + taskId + ".xlsx";
+        String objectName = "task_result_" + taskResultDtos.get(0).getTaskName() + ".xlsx";
         OSS ossClient = new OSSClientBuilder().build(ENDPOINT, ACCESS_KEY_ID, ACCESS_KEY_SECRET);
         try {
             ossClient.putObject(BUCKET_NAME, objectName, new ByteArrayInputStream(outputStream.toByteArray()));

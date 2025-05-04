@@ -57,7 +57,7 @@ public class TaskScheduleService {
             processTask(task);
         }
     }
-    //每小时执行一次，检查已完成评审的任务
+    //每小时执行一次，检查已完成评审的任务,给出得分
     @Scheduled(fixedDelay = 3600000, initialDelay = 600000)
     @Transactional
     public void checkAndFinishReview() {
@@ -76,87 +76,91 @@ public class TaskScheduleService {
         log.info("开始检查已完成评审的任务，找到{}个需要结束评审的任务", tasks.size());
         
         for (Task task : tasks) {
-            // 查询该任务的所有TaskResult记录
-            List<TaskResult> taskResults = taskResultMapper.selectList(
-                new LambdaQueryWrapper<TaskResult>()
-                    .eq(TaskResult::getTaskId, task.getId())
-            );
+            processReviewTask(task);
+        }
+    }
+
+    public void processReviewTask(Task task) {
+        // 查询该任务的所有TaskResult记录
+        List<TaskResult> taskResults = taskResultMapper.selectList(
+            new LambdaQueryWrapper<TaskResult>()
+                .eq(TaskResult::getTaskId, task.getId())
+        );
+        
+        // 计算平均分数，去掉最高分和最低分
+        double totalScore = 0;
+        int validResultCount = 0;
+        
+        // 找出有效的评分结果
+        List<TaskResult> validResults = new ArrayList<>();
+        for (TaskResult result : taskResults) {
+            if (result.getScore() != null && result.getScore() >= 0) {
+                validResults.add(result);
+            }
+        }
+        
+        if (validResults.size() >= 3) {  // 至少需要3个评分才能去掉最高分和最低分
+            // 按分数排序
+            TaskResult minScoreResult = null;
+            TaskResult maxScoreResult = null;
+            int minScore = Integer.MAX_VALUE;
+            int maxScore = Integer.MIN_VALUE;
             
-            // 计算平均分数，去掉最高分和最低分
-            double totalScore = 0;
-            int validResultCount = 0;
-            
-            // 找出有效的评分结果
-            List<TaskResult> validResults = new ArrayList<>();
-            for (TaskResult result : taskResults) {
-                if (result.getScore() != null && result.getScore() >= 0) {
-                    validResults.add(result);
+            // 找出最高分和最低分
+            for (TaskResult result : validResults) {
+                if (result.getScore() < minScore) {
+                    minScore = result.getScore();
+                    minScoreResult = result;
+                }
+                if (result.getScore() > maxScore) {
+                    maxScore = result.getScore();
+                    maxScoreResult = result;
                 }
             }
             
-            if (validResults.size() >= 3) {  // 至少需要3个评分才能去掉最高分和最低分
-                // 按分数排序
-                TaskResult minScoreResult = null;
-                TaskResult maxScoreResult = null;
-                int minScore = Integer.MAX_VALUE;
-                int maxScore = Integer.MIN_VALUE;
-                
-                // 找出最高分和最低分
-                for (TaskResult result : validResults) {
-                    if (result.getScore() < minScore) {
-                        minScore = result.getScore();
-                        minScoreResult = result;
-                    }
-                    if (result.getScore() > maxScore) {
-                        maxScore = result.getScore();
-                        maxScoreResult = result;
-                    }
+            // 更新最高分和最低分对应用户的score+1
+            if (minScoreResult != null) {
+                User minScoreUser = userMapper.selectById(minScoreResult.getUserId());
+                if (minScoreUser != null) {
+                    minScoreUser.setScore(minScoreUser.getScore() + 1);
+                    userMapper.updateById(minScoreUser);
                 }
-                
-                // 更新最高分和最低分对应用户的score+1
-                if (minScoreResult != null) {
-                    User minScoreUser = userMapper.selectById(minScoreResult.getUserId());
-                    if (minScoreUser != null) {
-                        minScoreUser.setScore(minScoreUser.getScore() + 1);
-                        userMapper.updateById(minScoreUser);
-                    }
+            }
+            
+            if (maxScoreResult != null) {
+                User maxScoreUser = userMapper.selectById(maxScoreResult.getUserId());
+                if (maxScoreUser != null) {
+                    maxScoreUser.setScore(maxScoreUser.getScore() + 1);
+                    userMapper.updateById(maxScoreUser);
                 }
-                
-                if (maxScoreResult != null) {
-                    User maxScoreUser = userMapper.selectById(maxScoreResult.getUserId());
-                    if (maxScoreUser != null) {
-                        maxScoreUser.setScore(maxScoreUser.getScore() + 1);
-                        userMapper.updateById(maxScoreUser);
-                    }
-                }
-                
-                // 计算去掉最高分和最低分后的总分
-                for (TaskResult result : validResults) {
-                    if (result != minScoreResult && result != maxScoreResult) {
-                        totalScore += result.getScore();
-                        validResultCount++;
-                    }
-                }
-            } else {
-                // 如果评分数量少于3，则使用所有有效评分
-                for (TaskResult result : validResults) {
+            }
+            
+            // 计算去掉最高分和最低分后的总分
+            for (TaskResult result : validResults) {
+                if (result != minScoreResult && result != maxScoreResult) {
                     totalScore += result.getScore();
                     validResultCount++;
                 }
             }
-            // 如果有有效评分，计算平均分并更新任务
-            if (validResultCount > 0) {
-                double averageScore = totalScore / validResultCount;
-                task.setResultScore(averageScore);
+        } else {
+            // 如果评分数量少于3，则使用所有有效评分
+            for (TaskResult result : validResults) {
+                totalScore += result.getScore();
+                validResultCount++;
             }
-            
-            // 更新任务状态为5（评审完成）
-            task.setStatus(5);
-            taskMapper.updateById(task);
-            
-            log.info("任务ID: {}, 任务名称: {}, 评审人数: {}, 最终得分: {}", 
-                    task.getId(), task.getTaskName(), taskResults.size(), task.getResultScore());
         }
+        // 如果有有效评分，计算平均分并更新任务
+        if (validResultCount > 0) {
+            double averageScore = totalScore / validResultCount;
+            task.setResultScore(averageScore);
+        }
+        
+        // 更新任务状态为5（评审完成）
+        task.setStatus(5);
+        taskMapper.updateById(task);
+        
+        log.info("任务ID: {}, 任务名称: {}, 评审人数: {}, 最终得分: {}", 
+                task.getId(), task.getTaskName(), taskResults.size(), task.getResultScore());
     }
 
     //每小时执行一次，检查评审任务，在抽取任务之后执行
@@ -196,7 +200,7 @@ public class TaskScheduleService {
         }
     }
 
-    private void processTask(Task task) {
+    public void processTask(Task task) {
         try {
             // 获取条件列表
             List<Condtion> conditions = condtionMapper.selectList(

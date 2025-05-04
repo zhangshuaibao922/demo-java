@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.cardo.demojava.dto.TaskPageResultDto;
 import com.cardo.demojava.entity.*;
 import com.cardo.demojava.mapper.CondtionMapper;
 import com.cardo.demojava.mapper.ResourceMapper;
@@ -54,13 +55,56 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
         }
         return Response.ok(taskPage);
     }
+    @Override
+    public Response<IPage<TaskPageResultDto>> queryTasksResult(Page<Task> pagination, String taskName, Integer status, String id) {
+        LambdaQueryWrapper<Task> taskLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        if(taskName != null && !taskName.isEmpty()) {
+            taskLambdaQueryWrapper.like(Task::getTaskName, taskName);
+        }
+        // 状态判断优化
+        if (status != null && status != 6) {
+            taskLambdaQueryWrapper.eq(Task::getStatus, status);
+        }
+        if(id!=null){
+           taskLambdaQueryWrapper.eq(Task::getUserId,id);
+        }
+        Page<Task> taskPage = taskMapper.selectPage(pagination, taskLambdaQueryWrapper);
+
+        // 转换为 TaskPageResultDto
+        List<TaskPageResultDto> taskPageResultDtos = taskPage.getRecords().stream().map(task -> {
+            TaskPageResultDto dto = new TaskPageResultDto();
+            // 复制基本属性
+            dto.setId(task.getId());
+            dto.setTaskName(task.getTaskName());
+            dto.setConditionId(task.getConditionId());
+            dto.setUserId(task.getUserId());
+            dto.setSiphonTime(task.getSiphonTime());
+            dto.setStartTime(task.getStartTime());
+            dto.setEndTime(task.getEndTime());
+            dto.setResultScore(task.getResultScore());
+            dto.setStatus(task.getStatus());
+
+            // 设置 number 字段为 TaskResult 的计数
+            LambdaQueryWrapper<TaskResult> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(TaskResult::getTaskId, task.getId());
+            Integer count = taskResultMapper.selectCount(queryWrapper);
+            dto.setNumber(String.valueOf(count));
+
+            return dto;
+        }).collect(Collectors.toList());
+
+        // 创建新的分页对象
+        Page<TaskPageResultDto> resultPage = new Page<>(taskPage.getCurrent(), taskPage.getSize(), taskPage.getTotal());
+        resultPage.setRecords(taskPageResultDtos);
+
+        return Response.ok(resultPage);
+    }
 
     @Override
-    public Response<String> add(Task task) {
+    public Response<String> add(Task task,String userId) {
         SnowflakeIdGenerator snowflakeIdGenerator = new SnowflakeIdGenerator(1);
         task.setConditionId(snowflakeIdGenerator.nextIdAsString());
-
-
+        task.setUserId(userId);
         int insert = taskMapper.insert(task);
         if (insert > 0) {
             return Response.ok("OK");

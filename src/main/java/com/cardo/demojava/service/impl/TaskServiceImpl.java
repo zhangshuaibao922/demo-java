@@ -101,6 +101,23 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
     }
 
     @Override
+    public Response<IPage<Task>> queryTasksTeacher(Page<Task> pagination, String taskName, Integer status, String id) {
+        LambdaQueryWrapper<Task> taskLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        if(taskName != null && !taskName.isEmpty()) {
+            taskLambdaQueryWrapper.like(Task::getTaskName, taskName);
+        }
+        // 状态判断优化
+        if (status != null && status != 6) {
+            taskLambdaQueryWrapper.eq(Task::getStatus, status);
+        }
+        if(id!=null){
+            taskLambdaQueryWrapper.eq(Task::getUserId,id);
+        }
+        Page<Task> taskPage = taskMapper.selectPage(pagination, taskLambdaQueryWrapper);
+        return Response.ok(taskPage);
+    }
+
+    @Override
     public Response<String> add(Task task,String userId) {
         SnowflakeIdGenerator snowflakeIdGenerator = new SnowflakeIdGenerator(1);
         task.setConditionId(snowflakeIdGenerator.nextIdAsString());

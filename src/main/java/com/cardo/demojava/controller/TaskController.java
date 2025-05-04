@@ -38,6 +38,18 @@ public class TaskController {
          Page<Task> pagination = new Page<>(page, size);
          return taskService.queryTasks(pagination,taskName,status,id);
      }
+    @GetMapping("/page/teacher")
+    public Response<IPage<Task>> queryTasksTeacher(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String taskName,
+            @RequestParam(required = false) Integer status,
+            @RequestParam(required = false)String id) {
+
+        // 构建分页参数
+        Page<Task> pagination = new Page<>(page, size);
+        return taskService.queryTasksTeacher(pagination,taskName,status,id);
+    }
     @GetMapping("/page/result")
     public Response<IPage<TaskPageResultDto>> queryTasksResult(
             @RequestParam(defaultValue = "1") int page,

@@ -22,4 +22,6 @@ public interface TaskService extends IService<Task> {
     Response<Task> update(Task task);
 
     Response<IPage<TaskPageResultDto>> queryTasksResult(Page<Task> pagination, String taskName, Integer status, String id);
+
+    Response<IPage<Task>> queryTasksTeacher(Page<Task> pagination, String taskName, Integer status, String id);
 }

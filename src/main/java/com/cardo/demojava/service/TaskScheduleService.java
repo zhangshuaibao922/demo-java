@@ -158,6 +158,7 @@ public class TaskScheduleService {
         // 更新任务状态为5（评审完成）
         task.setStatus(5);
         taskMapper.updateById(task);
+        //todo 发送通知告诉用户，这玩意有没有通过
         
         log.info("任务ID: {}, 任务名称: {}, 评审人数: {}, 最终得分: {}", 
                 task.getId(), task.getTaskName(), taskResults.size(), task.getResultScore());
@@ -188,7 +189,7 @@ public class TaskScheduleService {
                 new LambdaQueryWrapper<TaskResult>()
                     .eq(TaskResult::getTaskId, task.getId())
             );
-            //TODO发送系统通知
+            //TODO 发送系统通知
             // 记录该任务的评审人数
             log.info("任务ID: {}, 任务名称: {}, 评审人数: {}", 
                     task.getId(), task.getTaskName(), taskResults.size());

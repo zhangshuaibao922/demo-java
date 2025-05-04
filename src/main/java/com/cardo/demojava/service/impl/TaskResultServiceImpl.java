@@ -15,6 +15,7 @@ import com.cardo.demojava.mapper.TaskMapper;
 import com.cardo.demojava.mapper.TaskResultMapper;
 import com.cardo.demojava.mapper.UserMapper;
 import com.cardo.demojava.service.TaskResultService;
+import com.cardo.demojava.service.TaskScheduleService;
 import org.springframework.beans.BeanUtils;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +35,8 @@ public class TaskResultServiceImpl extends ServiceImpl<TaskResultMapper, TaskRes
     private TaskMapper taskMapper;
     @Autowired
     private UserMapper userMapper;
+    @Autowired
+    TaskScheduleService taskScheduleService;
 
     @Override
     public Response<IPage<TaskResultDto>> queryTaskResultDtos(Page<TaskResult> pagination, String taskId, String name,
@@ -54,7 +57,7 @@ public class TaskResultServiceImpl extends ServiceImpl<TaskResultMapper, TaskRes
         }
         List<TaskResultDto> taskResultDtos = new ArrayList<>();
         Task task = taskMapper.selectById(taskResults.get(0).getTaskId());
-        
+
         for (TaskResult taskResult : taskResults) {
             TaskResultDto taskResultDto = new TaskResultDto();
             BeanUtils.copyProperties(taskResult, taskResultDto);
@@ -84,7 +87,11 @@ public class TaskResultServiceImpl extends ServiceImpl<TaskResultMapper, TaskRes
 
     @Override
     public Response<String> deleteTaskResult(String id) {
+        TaskResult result = taskResultMapper.selectById(id);
         int delete = taskResultMapper.deleteById(id);
+        String taskId = result.getTaskId();
+        Task task = taskMapper.selectById(taskId);
+        taskScheduleService.processReviewTask(task);
         if(delete > 0) {
             return Response.ok("OK");
         }else { 
@@ -95,7 +102,11 @@ public class TaskResultServiceImpl extends ServiceImpl<TaskResultMapper, TaskRes
     @Override
     public Response<String> deleteAllTaskResult(List<TaskResultDto> taskResultsDtos) {
         List<String> ids = taskResultsDtos.stream().map(TaskResultDto::getId).collect(Collectors.toList());
+        TaskResult result = taskResultMapper.selectById(ids.get(0));
         int delete = taskResultMapper.deleteBatchIds(ids);
+        String taskId = result.getTaskId();
+        Task task = taskMapper.selectById(taskId);
+        taskScheduleService.processReviewTask(task);
         if(delete > 0) {
             return Response.ok("OK");
         }else {
@@ -123,11 +134,26 @@ public class TaskResultServiceImpl extends ServiceImpl<TaskResultMapper, TaskRes
 
     @Override
     public Response<String> update(TaskResult taskResult) {
-        int update = taskResultMapper.updateById(taskResult);
+        TaskResult updateResult = taskResultMapper.selectOne(
+                new LambdaQueryWrapper<TaskResult>()
+                        .eq(TaskResult::getTaskId, taskResult.getTaskId())
+                        .eq(TaskResult::getUserId, taskResult.getUserId()));
+        updateResult.setScore(taskResult.getScore());
+        updateResult.setDescription(taskResult.getDescription());
+        int update = taskResultMapper.updateById(updateResult);
         if(update > 0) {
             return Response.ok("OK");
         }else {
             return Response.error(UPDATE_FAIL);
         }
+    }
+
+    @Override
+    public Response<TaskResult> queryOne(String taskId, String id) {
+        TaskResult result = taskResultMapper.selectOne(
+                new LambdaQueryWrapper<TaskResult>()
+                        .eq(TaskResult::getTaskId, taskId)
+                        .eq(TaskResult::getUserId, id));
+        return Response.ok(result);
     }
 }

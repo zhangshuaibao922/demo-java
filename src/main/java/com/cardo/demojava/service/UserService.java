@@ -34,4 +34,6 @@ public interface UserService extends IService<User> {
     Response<Integer> getUserCount();
 
     Response<List<UserVo>> getUserByUsername(String username);
+
+    Response<String> create(User user,String code);
 }

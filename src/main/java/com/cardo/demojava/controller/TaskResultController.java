@@ -51,6 +51,10 @@ public class TaskResultController {
           return taskResultService.queryTaskResultDtos(pagination,taskId, name, fieldId);
       }
 
+      @GetMapping("/one/{taskId}/{id}")
+      public Response<TaskResult> queryOne(@PathVariable String taskId,@PathVariable String id){
+          return taskResultService.queryOne(taskId,id);
+      }
       //新增
      @PostMapping("/add/{taskId}/{userId}")
      public Response<String> addTaskResult(@PathVariable String taskId, @PathVariable String userId) {

@@ -89,6 +89,7 @@ public class ResourceServiceImpl extends ServiceImpl<ResourceMapper, Resource> i
                 resource.setUserId(userId);
                 resource.setResourceUrl(fileUrl);
                 resource.setResourceType(fileType);
+                resource.setResourceName(originalFilename);
                 resourceMapper.insert(resource);
                 return Response.ok(fileUrl);
             } finally {

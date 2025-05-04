@@ -12,10 +12,13 @@ import com.cardo.demojava.entity.User;
 import com.cardo.demojava.mapper.FieldMapper;
 import com.cardo.demojava.mapper.UserMapper;
 import com.cardo.demojava.service.UserService;
+import com.cardo.demojava.service.VerificationCodeService;
+import com.cardo.demojava.util.SendMailUtils;
 import com.cardo.demojava.util.SnowflakeIdGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,6 +35,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     private UserMapper userMapper;
     @Autowired
     private FieldMapper fieldMapper;
+
+    @Autowired
+    VerificationCodeService codeService;
+
 
 
     @Override
@@ -122,6 +129,22 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             }).collect(Collectors.toList()));
         }else {
             return Response.error(NONE);
+        }
+    }
+
+    @Override
+    public Response<String> create(User user,String code) {
+        SnowflakeIdGenerator snowflakeIdGenerator = new SnowflakeIdGenerator(1);
+        String relationship = snowflakeIdGenerator.nextIdAsString();
+        user.setRelationship(relationship);
+        boolean b = codeService.verifyCode(user.getEmail(), code);
+        if(b){
+
+        int insert = userMapper.insert(user);
+            return Response.ok("OK");
+        }else {
+
+            return Response.error(ADD_FAIL);
         }
     }
 }

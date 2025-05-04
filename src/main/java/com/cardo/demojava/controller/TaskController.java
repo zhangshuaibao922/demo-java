@@ -2,6 +2,7 @@ package com.cardo.demojava.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.cardo.demojava.dto.TaskPageResultDto;
 import com.cardo.demojava.entity.Response;
 import com.cardo.demojava.entity.Task;
 import com.cardo.demojava.service.TaskService;
@@ -30,17 +31,30 @@ public class TaskController {
              @RequestParam(defaultValue = "1") int page,
              @RequestParam(defaultValue = "10") int size,
              @RequestParam(required = false) String taskName,
-             @RequestParam(required = false) Integer status) {
+             @RequestParam(required = false) Integer status,
+             @RequestParam(required = false)String id) {
 
          // 构建分页参数
          Page<Task> pagination = new Page<>(page, size);
-         return taskService.queryTasks(pagination,taskName,status);
+         return taskService.queryTasks(pagination,taskName,status,id);
      }
+    @GetMapping("/page/result")
+    public Response<IPage<TaskPageResultDto>> queryTasksResult(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String taskName,
+            @RequestParam(required = false) Integer status,
+            @RequestParam(required = false)String id) {
+
+        // 构建分页参数
+        Page<Task> pagination = new Page<>(page, size);
+        return taskService.queryTasksResult(pagination,taskName,status,id);
+    }
 
      //新增
-     @PostMapping("/add")
-     public Response<String> addTask(@RequestBody Task task) {
-         return taskService.add(task);
+     @PostMapping("/add/{userId}")
+     public Response<String> addTask(@RequestBody Task task,@PathVariable String userId) {
+         return taskService.add(task,userId);
      }
 
      @PostMapping("/delete/all")

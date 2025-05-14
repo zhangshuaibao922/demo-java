@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cardo.demojava.dto.TaskResultDto;
+import com.cardo.demojava.dto.UserSelectCountDTO;
 import com.cardo.demojava.entity.Field;
 import com.cardo.demojava.entity.Response;
 import com.cardo.demojava.entity.Task;
@@ -18,7 +19,10 @@ import com.cardo.demojava.service.TaskResultService;
 import com.cardo.demojava.service.TaskScheduleService;
 import org.springframework.beans.BeanUtils;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.cardo.demojava.contant.Code.*;
@@ -155,5 +159,35 @@ public class TaskResultServiceImpl extends ServiceImpl<TaskResultMapper, TaskRes
                         .eq(TaskResult::getTaskId, taskId)
                         .eq(TaskResult::getUserId, id));
         return Response.ok(result);
+    }
+
+    @Override
+    public Response<List<UserSelectCountDTO>> getTopSelectedUsers() {
+        // 使用QueryWrapper构建分组查询
+        List<Map<String, Object>> countResults = taskResultMapper.selectMaps(
+            new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<TaskResult>()
+                .select("user_id", "user_name", "COUNT(*) as count")
+                .groupBy("user_id", "user_name")
+                .orderByDesc("COUNT(*)")
+                .last("LIMIT 10")
+        );
+        
+        // 转换为DTO列表
+        List<UserSelectCountDTO> topUsers = new ArrayList<>();
+        for (Map<String, Object> result : countResults) {
+            // 安全处理可能的null值
+            Object userIdObj = result.get("user_id");
+            Object userNameObj = result.get("user_name");
+            Object countObj = result.get("count");
+            
+            if (userIdObj != null && userNameObj != null && countObj != null) {
+                String userId = userIdObj.toString();
+                String userName = userNameObj.toString();
+                Integer count = ((Number) countObj).intValue();
+                topUsers.add(new UserSelectCountDTO(userId, userName, count));
+            }
+        }
+        
+        return Response.ok(topUsers);
     }
 }

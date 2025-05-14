@@ -3,12 +3,14 @@ package com.cardo.demojava;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.cardo.demojava.config.RedisService;
 import com.cardo.demojava.dto.Expert;
+import com.cardo.demojava.dto.TaskExpertCountDTO;
 import com.cardo.demojava.entity.*;
 import com.cardo.demojava.mapper.*;
 import java.util.*;
 import com.cardo.demojava.service.ExpertService;
 import com.cardo.demojava.service.LoginService;
 import com.cardo.demojava.service.TaskScheduleService;
+import com.cardo.demojava.service.TaskService;
 import com.cardo.demojava.util.SendMailUtils;
 import com.cardo.demojava.util.SnowflakeIdGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -45,6 +47,8 @@ class DemoJavaApplicationTests {
     TaskMapper taskMapper;
     @Autowired
     TaskScheduleService taskScheduleService;
+    @Autowired
+    TaskService taskService;
     @Test
     void contextLoads() {
         redisService.deleteKey("experts");
@@ -78,6 +82,11 @@ class DemoJavaApplicationTests {
             user.setScore(0.00);
             userMapper.insert(user);
         }
+    }
+    @Test
+    public void Test(){
+        Response<List<TaskExpertCountDTO>> listResponse = taskService.queryTasksWithExpertCount();
+        System.out.println(listResponse.getData());
     }
     @Test
     void contextLoads3() {

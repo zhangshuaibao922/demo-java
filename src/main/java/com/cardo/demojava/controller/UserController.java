@@ -2,11 +2,13 @@ package com.cardo.demojava.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.cardo.demojava.dto.FieldUserCountDTO;
 import com.cardo.demojava.dto.UserVo;
 import com.cardo.demojava.entity.Response;
 import com.cardo.demojava.entity.User;
 import com.cardo.demojava.service.UserService;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -81,5 +83,11 @@ public class UserController{
      @GetMapping("/count")
      public Response<Integer> getUserCount() {
          return userService.getUserCount();
+     }
+     
+     @GetMapping("/field-count")
+     @ApiOperation("获取每个领域的用户数量")
+     public Response<List<FieldUserCountDTO>> getFieldUserCount() {
+         return userService.getFieldUserCount();
      }
 }

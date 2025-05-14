@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.cardo.demojava.dto.FieldUserCountDTO;
 import com.cardo.demojava.dto.UserVo;
 import com.cardo.demojava.entity.Field;
 import com.cardo.demojava.entity.Response;
@@ -146,5 +147,28 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
             return Response.error(ADD_FAIL);
         }
+    }
+
+    @Override
+    public Response<List<FieldUserCountDTO>> getFieldUserCount() {
+        // 获取所有领域
+        List<Field> fields = fieldMapper.selectList(null);
+        
+        // 构建结果列表
+        List<FieldUserCountDTO> resultList = new ArrayList<>();
+        
+        // 对每个领域，查询该领域的用户数量
+        for (Field field : fields) {
+            LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(User::getFieldId, field.getFieldId());
+            
+            Integer userCount = userMapper.selectCount(queryWrapper);
+            
+            // 创建DTO并添加到结果列表
+            FieldUserCountDTO dto = new FieldUserCountDTO(field.getFieldName(), userCount);
+            resultList.add(dto);
+        }
+        
+        return Response.ok(resultList);
     }
 }

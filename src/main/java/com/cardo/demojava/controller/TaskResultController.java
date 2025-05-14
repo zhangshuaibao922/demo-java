@@ -15,9 +15,11 @@ import com.aliyuncs.ecs.model.v20140526.DescribeTasksResponse.Task;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cardo.demojava.dto.TaskResultDto;
+import com.cardo.demojava.dto.UserSelectCountDTO;
 import com.cardo.demojava.entity.Response;
 import com.cardo.demojava.entity.TaskResult;
 import com.cardo.demojava.service.TaskResultService;
+import io.swagger.annotations.ApiOperation;
 
 
 @RestController
@@ -84,5 +86,11 @@ public class TaskResultController {
      public Response<Integer> getTaskResultDtoCount(@PathVariable String taskId) {
          return taskResultService.getTaskResultDtoCount(taskId);
      }
+
+    @GetMapping("/top-selected-users")
+    @ApiOperation("获取被抽中次数最多的前10名用户")
+    public Response<List<UserSelectCountDTO>> getTopSelectedUsers() {
+        return taskResultService.getTopSelectedUsers();
+    }
 
 }

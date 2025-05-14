@@ -2,11 +2,14 @@ package com.cardo.demojava.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.cardo.demojava.dto.TaskExpertCountDTO;
 import com.cardo.demojava.dto.TaskPageResultDto;
+import com.cardo.demojava.dto.TaskStatusCountDTO;
 import com.cardo.demojava.entity.Response;
 import com.cardo.demojava.entity.Task;
 import com.cardo.demojava.service.TaskService;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -84,4 +87,16 @@ public class TaskController {
      public Response<Task> updateTask(@RequestBody Task task) {
          return taskService.update(task);
      }
+
+    @GetMapping("/tasks-with-expert-count")
+    @ApiOperation("查询抽取状态、评审状态及评审完成的任务及其专家人数")
+    public Response<List<TaskExpertCountDTO>> getTasksWithExpertCount() {
+        return taskService.queryTasksWithExpertCount();
+    }
+
+    @GetMapping("/status-count")
+    @ApiOperation("获取各状态任务的数量")
+    public Response<TaskStatusCountDTO> getTaskStatusCount() {
+        return taskService.getTaskStatusCount();
+    }
 }

@@ -3,7 +3,9 @@ package com.cardo.demojava.service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.cardo.demojava.dto.TaskExpertCountDTO;
 import com.cardo.demojava.dto.TaskPageResultDto;
+import com.cardo.demojava.dto.TaskStatusCountDTO;
 import com.cardo.demojava.entity.Response;
 import com.cardo.demojava.entity.Task;
 
@@ -24,4 +26,8 @@ public interface TaskService extends IService<Task> {
     Response<IPage<TaskPageResultDto>> queryTasksResult(Page<Task> pagination, String taskName, Integer status, String id);
 
     Response<IPage<Task>> queryTasksTeacher(Page<Task> pagination, String taskName, Integer status, String id);
+    
+    Response<List<TaskExpertCountDTO>> queryTasksWithExpertCount();
+    
+    Response<TaskStatusCountDTO> getTaskStatusCount();
 }

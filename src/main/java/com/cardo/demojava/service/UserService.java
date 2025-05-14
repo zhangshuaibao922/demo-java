@@ -3,6 +3,7 @@ package com.cardo.demojava.service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.cardo.demojava.dto.FieldUserCountDTO;
 import com.cardo.demojava.dto.UserVo;
 import com.cardo.demojava.entity.Response;
 import com.cardo.demojava.entity.User;
@@ -36,4 +37,10 @@ public interface UserService extends IService<User> {
     Response<List<UserVo>> getUserByUsername(String username);
 
     Response<String> create(User user,String code);
+    
+    /**
+     * 获取每个领域的用户数量
+     * @return 包含每个领域名称和用户数量的列表
+     */
+    Response<List<FieldUserCountDTO>> getFieldUserCount();
 }

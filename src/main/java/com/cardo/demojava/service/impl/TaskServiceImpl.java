@@ -4,7 +4,9 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.cardo.demojava.dto.TaskExpertCountDTO;
 import com.cardo.demojava.dto.TaskPageResultDto;
+import com.cardo.demojava.dto.TaskStatusCountDTO;
 import com.cardo.demojava.entity.*;
 import com.cardo.demojava.mapper.CondtionMapper;
 import com.cardo.demojava.mapper.ResourceMapper;
@@ -15,6 +17,7 @@ import com.cardo.demojava.util.SnowflakeIdGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -171,5 +174,63 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
         }else{
             return Response.error(UPDATE_FAIL);
         }
+    }
+
+    @Override
+    public Response<List<TaskExpertCountDTO>> queryTasksWithExpertCount() {
+        // 查询状态为3、4、5的任务（抽取状态、评审状态、评审完成）
+        LambdaQueryWrapper<Task> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.in(Task::getStatus, 3, 4, 5);
+        List<Task> tasks = taskMapper.selectList(queryWrapper);
+        
+        // 构建结果列表
+        List<TaskExpertCountDTO> resultList = new ArrayList<>();
+        
+        // 对每个任务，查询对应的专家人数
+        for (Task task : tasks) {
+            LambdaQueryWrapper<TaskResult> resultQueryWrapper = new LambdaQueryWrapper<>();
+            resultQueryWrapper.eq(TaskResult::getTaskId, task.getId());
+            Integer expertCount = taskResultMapper.selectCount(resultQueryWrapper);
+            
+            // 创建DTO并添加到结果列表
+            TaskExpertCountDTO dto = new TaskExpertCountDTO();
+            dto.setTaskName(task.getTaskName());
+            dto.setExpertCount(expertCount);
+            resultList.add(dto);
+        }
+        
+        return Response.ok(resultList);
+    }
+
+    @Override
+    public Response<TaskStatusCountDTO> getTaskStatusCount() {
+        TaskStatusCountDTO countDTO = new TaskStatusCountDTO();
+        
+        // 查询状态为1的任务数量（初始化）
+        LambdaQueryWrapper<Task> status1Query = new LambdaQueryWrapper<>();
+        status1Query.eq(Task::getStatus, 1);
+        countDTO.setStatus1(taskMapper.selectCount(status1Query));
+        
+        // 查询状态为2的任务数量（资源准备完成）
+        LambdaQueryWrapper<Task> status2Query = new LambdaQueryWrapper<>();
+        status2Query.eq(Task::getStatus, 2);
+        countDTO.setStatus2(taskMapper.selectCount(status2Query));
+        
+        // 查询状态为3的任务数量（抽取状态）
+        LambdaQueryWrapper<Task> status3Query = new LambdaQueryWrapper<>();
+        status3Query.eq(Task::getStatus, 3);
+        countDTO.setStatus3(taskMapper.selectCount(status3Query));
+        
+        // 查询状态为4的任务数量（评审状态）
+        LambdaQueryWrapper<Task> status4Query = new LambdaQueryWrapper<>();
+        status4Query.eq(Task::getStatus, 4);
+        countDTO.setStatus4(taskMapper.selectCount(status4Query));
+        
+        // 查询状态为5的任务数量（评审完成）
+        LambdaQueryWrapper<Task> status5Query = new LambdaQueryWrapper<>();
+        status5Query.eq(Task::getStatus, 5);
+        countDTO.setStatus5(taskMapper.selectCount(status5Query));
+        
+        return Response.ok(countDTO);
     }
 }

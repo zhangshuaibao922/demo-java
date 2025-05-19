@@ -49,48 +49,23 @@ class DemoJavaApplicationTests {
     TaskScheduleService taskScheduleService;
     @Autowired
     TaskService taskService;
+
+    //抽取评委
     @Test
-    void contextLoads() {
-        redisService.deleteKey("experts");
+    void Test01() {
+        taskScheduleService.checkAndFilterUsers();
     }
+    //开启评审
     @Test
-    void contextLoads1() {
-        User user = userMapper.selectById(10);
-        System.out.println(user.getRelationship());
-        ObjectMapper objectMapper = new ObjectMapper();
-        try {
-            objectMapper.readValue(user.getRelationship(), new TypeReference<List<RelationShip>>() {});
-            System.out.println(123);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
+    void Test03() {
+        taskScheduleService.checkAndStartReview();
     }
+    //结束评审，给出得分
     @Test
-    void contextLoads2() {
-        for (int i = 0; i < 10; i++) {
-            User user = new User();
-            user.setAccount(String.valueOf(300+i));
-            user.setPassword(String.valueOf(300+i));
-            user.setName(String.valueOf(200+i));
-            user.setEmail("2742520302@qq.com");
-            SnowflakeIdGenerator snowflakeIdGenerator = new SnowflakeIdGenerator(1);
-            String relationship = snowflakeIdGenerator.nextIdAsString();
-            user.setRelationship(relationship);
-            user.setFieldId(1);
-            user.setRoleId(1);
-            user.setOld(1.00);
-            user.setScore(0.00);
-            userMapper.insert(user);
-        }
-    }
-    @Test
-    public void Test(){
-        Response<List<TaskExpertCountDTO>> listResponse = taskService.queryTasksWithExpertCount();
-        System.out.println(listResponse.getData());
-    }
-    @Test
-    void contextLoads3() {
+    void Test02() {
         taskScheduleService.checkAndFinishReview();
     }
+
+
 
 }

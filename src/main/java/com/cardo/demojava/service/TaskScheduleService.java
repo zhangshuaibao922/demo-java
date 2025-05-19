@@ -9,10 +9,12 @@ import com.cardo.demojava.mapper.TaskMapper;
 import com.cardo.demojava.mapper.TaskResultMapper;
 import com.cardo.demojava.mapper.UserMapper;
 
+import com.cardo.demojava.util.SendMailUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.cardo.demojava.dto.Expert;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -37,6 +40,9 @@ public class TaskScheduleService {
     private UserFilterService userFilterService;
     @Autowired
     private TaskResultMapper taskResultMapper;
+
+    @Autowired
+    SendMailUtils sendMailUtils;
 
     //每小时执行一次，先执行抽取任务
     @Scheduled(fixedDelay = 3600000, initialDelay = 0) 
@@ -158,8 +164,20 @@ public class TaskScheduleService {
         // 更新任务状态为5（评审完成）
         task.setStatus(5);
         taskMapper.updateById(task);
-        //todo 发送通知告诉用户，这玩意有没有通过
-        
+        //发送通知告诉用户，这玩意有没有通过
+        ArrayList<String> strings = new ArrayList<>();
+        User user = userMapper.selectById(task.getUserId());
+        strings.add(user.getEmail());
+        // 创建邮件消息
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setSubject(task.getTaskName()+"评审结果");
+        if(task.getResultScore()>=6.00){
+         message.setText(task.getTaskName()+"的最终得分为"+task.getResultScore()+",通过审核");
+        }else {
+            message.setText(task.getTaskName()+"的最终得分为"+task.getResultScore()+",没有通过");
+        }
+        sendMailUtils.sendEmail(strings,message.getSubject(),message.getText());
+
         log.info("任务ID: {}, 任务名称: {}, 评审人数: {}, 最终得分: {}", 
                 task.getId(), task.getTaskName(), taskResults.size(), task.getResultScore());
     }
@@ -189,7 +207,24 @@ public class TaskScheduleService {
                 new LambdaQueryWrapper<TaskResult>()
                     .eq(TaskResult::getTaskId, task.getId())
             );
-            //TODO 发送系统通知
+            // 获取所有评审人的用户ID
+            List<String> reviewerIds = taskResults.stream()
+                .map(TaskResult::getUserId)
+                .collect(Collectors.toList());
+            
+            // 获取所有评审人的用户信息
+            List<User> userList = userMapper.selectList(
+                new LambdaQueryWrapper<User>()
+                    .in(User::getId, reviewerIds)
+            );
+
+            List<String> emails = userList.stream().map(User::getEmail).collect(Collectors.toList());
+            // 创建邮件消息
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setSubject(task.getTaskName()+"开始评审");
+            message.setText(task.getTaskName()+"的评审链接为"+"http://localhost:9999/");
+            sendMailUtils.sendEmail(emails,message.getSubject(),message.getText());
+            // 发送系统通知
             // 记录该任务的评审人数
             log.info("任务ID: {}, 任务名称: {}, 评审人数: {}", 
                     task.getId(), task.getTaskName(), taskResults.size());

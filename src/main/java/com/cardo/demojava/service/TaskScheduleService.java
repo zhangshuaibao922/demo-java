@@ -222,7 +222,7 @@ public class TaskScheduleService {
             // 创建邮件消息
             SimpleMailMessage message = new SimpleMailMessage();
             message.setSubject(task.getTaskName()+"开始评审");
-            message.setText(task.getTaskName()+"的评审链接为"+"http://localhost:9999/");
+            message.setText(task.getTaskName()+"的评审链接为"+"\n<a href=\"http://localhost:9999/\">点击这里</a>查看");
             sendMailUtils.sendEmail(emails,message.getSubject(),message.getText());
             // 发送系统通知
             // 记录该任务的评审人数

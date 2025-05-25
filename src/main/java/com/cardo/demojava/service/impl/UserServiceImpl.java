@@ -60,8 +60,31 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
              }
          }
 
-         if(score != null) {
-             queryWrapper.ge(User::getScore,Double.valueOf(score));
+         if(score != null && !score.trim().isEmpty()) {
+             // 根据文本标签设置分数区间条件
+             switch (score) {
+                 case "优秀":
+                     queryWrapper.le(User::getScore, 5.0); // 小于等于5分
+                     break;
+                 case "良好":
+                     queryWrapper.gt(User::getScore, 5.0).le(User::getScore, 15.0); // 5分到15分
+                     break;
+                 case "一般":
+                     queryWrapper.gt(User::getScore, 15.0).le(User::getScore, 25.0); // 15分到25分
+                     break;
+                 case "及格":
+                     queryWrapper.gt(User::getScore, 25.0); // 大于25分
+                     break;
+                 default:
+                     // 如果是数字，则按原来逻辑处理
+                     try {
+                         Double scoreValue = Double.valueOf(score);
+                         queryWrapper.ge(User::getScore, scoreValue);
+                     } catch (NumberFormatException e) {
+                         // 忽略无效输入
+                     }
+                     break;
+             }
          }
          // 执行分页查询
          Page<User> userPage = userMapper.selectPage(pagination, queryWrapper);

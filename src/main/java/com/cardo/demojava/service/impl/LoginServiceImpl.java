@@ -6,6 +6,7 @@ import com.cardo.demojava.entity.Response;
 import com.cardo.demojava.entity.User;
 import com.cardo.demojava.mapper.UserMapper;
 import com.cardo.demojava.service.LoginService;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,7 +26,8 @@ public class LoginServiceImpl implements LoginService {
         if(user == null){
             return Response.error(NONE);
         }
-        if(login.getPassword().equals(user.getPassword())){
+        String encryptedPassword = DigestUtils.md5Hex(login.getPassword());
+        if(encryptedPassword.equals(user.getPassword())){
             return Response.ok(user);
         }else {
             return Response.error(PASSWORD_FAIL);

@@ -16,6 +16,7 @@ import com.cardo.demojava.service.UserService;
 import com.cardo.demojava.service.VerificationCodeService;
 import com.cardo.demojava.util.SendMailUtils;
 import com.cardo.demojava.util.SnowflakeIdGenerator;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -138,13 +139,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         SnowflakeIdGenerator snowflakeIdGenerator = new SnowflakeIdGenerator(1);
         String relationship = snowflakeIdGenerator.nextIdAsString();
         user.setRelationship(relationship);
+        // 对密码进行MD5加密
+        String encryptedPassword = DigestUtils.md5Hex(user.getPassword());
+        user.setPassword(encryptedPassword);
         boolean b = codeService.verifyCode(user.getEmail(), code);
         if(b){
-
-        int insert = userMapper.insert(user);
+            int insert = userMapper.insert(user);
             return Response.ok("OK");
         }else {
-
             return Response.error(ADD_FAIL);
         }
     }

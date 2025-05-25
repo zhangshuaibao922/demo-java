@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.cardo.demojava.dto.FieldUserCountDTO;
+import com.cardo.demojava.dto.PasswordDTO;
 import com.cardo.demojava.dto.UserVo;
 import com.cardo.demojava.entity.Field;
 import com.cardo.demojava.entity.Response;
@@ -72,6 +73,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         SnowflakeIdGenerator snowflakeIdGenerator = new SnowflakeIdGenerator(1);
         String relationship = snowflakeIdGenerator.nextIdAsString();
         user.setRelationship(relationship);
+        String encryptedPassword = DigestUtils.md5Hex(user.getPassword());
+        user.setPassword(encryptedPassword);
         int insert = userMapper.insert(user);
         if(insert > 0) {
             return Response.ok("OK");
@@ -93,6 +96,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public Response<User> updateUser(User user) {
+        String encryptedPassword = DigestUtils.md5Hex(user.getPassword());
+        user.setPassword(encryptedPassword);
          int update = userMapper.updateById(user);
          if(update > 0) {
              return Response.ok(user);
@@ -172,5 +177,35 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
         
         return Response.ok(resultList);
+    }
+    
+    @Override
+    public Response<String> changePassword(PasswordDTO passwordDTO) {
+        // 根据ID查询用户
+        User user = userMapper.selectById(passwordDTO.getId());
+        if (user == null) {
+            return Response.error(NONE);
+        }
+        
+        // 对传入的旧密码进行MD5加密
+        String encryptedOldPassword = DigestUtils.md5Hex(passwordDTO.getPassword());
+        
+        // 验证旧密码是否正确
+        if (!encryptedOldPassword.equals(user.getPassword())) {
+            return Response.error(PASSWORD_FAIL);
+        }
+        
+        // 对新密码进行MD5加密
+        String encryptedNewPassword = DigestUtils.md5Hex(passwordDTO.getNewPassword());
+        
+        // 更新用户密码
+        user.setPassword(encryptedNewPassword);
+        int update = userMapper.updateById(user);
+        
+        if (update > 0) {
+            return Response.ok("密码修改成功");
+        } else {
+            return Response.error(UPDATE_FAIL);
+        }
     }
 }

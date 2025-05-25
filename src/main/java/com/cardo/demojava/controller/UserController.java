@@ -3,6 +3,7 @@ package com.cardo.demojava.controller;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cardo.demojava.dto.FieldUserCountDTO;
+import com.cardo.demojava.dto.PasswordDTO;
 import com.cardo.demojava.dto.UserVo;
 import com.cardo.demojava.entity.Response;
 import com.cardo.demojava.entity.User;
@@ -89,5 +90,11 @@ public class UserController{
      @ApiOperation("获取每个领域的用户数量")
      public Response<List<FieldUserCountDTO>> getFieldUserCount() {
          return userService.getFieldUserCount();
+     }
+     
+     @PostMapping("/change-password")
+     @ApiOperation("修改用户密码")
+     public Response<String> changePassword(@RequestBody PasswordDTO passwordDTO) {
+         return userService.changePassword(passwordDTO);
      }
 }
